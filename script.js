@@ -302,8 +302,10 @@ function validateStatement(statementStr, offset, fullScript) {
         // Concatenation validation
         // This regex finds terms (variables, strings, or function calls ending in ')')
         // that are followed by another term (variable, string, or function name), without a valid operator between them.
-        const concatRegex = /((?:@@[a-zA-Z0-9_.]+|\"[^\"]*\"|'[^']*'|\)))\s+((?:@@[a-zA-Z0-9_.]+|\"[^\"]*\"|'[^']*'|[a-zA-Z_][a-zA-Z0-9_]*))/g;
+        // It now includes a negative lookahead to ignore known operators.
+        const concatRegex = /((?:@@[a-zA-Z0-9_.]+|\"[^\"]*\"|'[^']*'|\)))\s+(?!E\b|OU\b|NEGADO\b|[=<>+\-*\/%^])((?:@@[a-zA-Z0-9_.]+|\"[^\"]*\"|'[^']*'|[a-zA-Z_][a-zA-Z0-9_]*))/g;
         let concatMatch;
+
         while ((concatMatch = concatRegex.exec(statementStr))) {
             const firstTerm = concatMatch[1].trim();
             const secondTerm = concatMatch[2].trim();
@@ -355,10 +357,11 @@ function validateStatement(statementStr, offset, fullScript) {
             if ((char === '"' || char === "'") && prevChar !== '\\') {
                 // Check for invalid preceding characters to catch missing opening quotes like in `= 1"`.
                 const lookbehind = statementStr.substring(0, i).trimEnd();
-                const lastCharOfLookbehind = lookbehind.slice(-1);
-                const validPrecedingChars = new Set(['=', ',', '(', '&', ';', '']); // '' for start of formula
+                const lastTwoCharsOfLookbehind = lookbehind.slice(-2).trim();
+                const validPrecedingChars = new Set(['=', ',', '(', '&', ';', '', '<>', '>=', '<=', '<', '>', '+', '-', '*', '/', '^', '%']); // '' for start of formula
 
-                if (!validPrecedingChars.has(lastCharOfLookbehind) && lastCharOfLookbehind !== '"' && lastCharOfLookbehind !== "'") {
+                // Check if the end of the lookbehind is not one of the valid single or double character operators.
+                if (!validPrecedingChars.has(lastTwoCharsOfLookbehind) && !validPrecedingChars.has(lastTwoCharsOfLookbehind.slice(-1)) && lastTwoCharsOfLookbehind !== '"' && lastTwoCharsOfLookbehind !== "'") {
                     const errorMsg = `Aspas de abertura ausentes ou caractere inválido antes da string.`;
                     const lastSpaceIndex = lookbehind.lastIndexOf(' ');
                     const termToQuote = lookbehind.substring(lastSpaceIndex + 1);
