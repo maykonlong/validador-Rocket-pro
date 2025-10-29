@@ -1,0 +1,556 @@
+ 
+ 
+        _xml_expressao << "    <grupo>";
+        _xml_expressao << "     <descricao>Constantes</descricao>";
+ 
+        //-----------------------
+        //| SUB_GRUPO ==> TODAS
+        //-----------------------
+        _xml_expressao << "     <sub_grupo>";
+        _xml_expressao << "         <descricao_sub>Todas</descricao_sub>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>\"\" (sequência vazia)</elemento>";
+        _xml_expressao << "             <funcao>\"\"</funcao>";
+        _xml_expressao << "             <desc_funcao>Sequência de caracteres de texto vazia.</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Verdadeiro</elemento>";
+        _xml_expressao << "             <funcao>Verdadeiro</funcao>";
+        _xml_expressao << "             <desc_funcao>Valor lógico VERDADEIRO.</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Falso</elemento>";
+        _xml_expressao << "             <funcao>Falso</funcao>";
+        _xml_expressao << "             <desc_funcao>Valor lógico FALSO.</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "     </sub_grupo>";
+        _xml_expressao << "    </grupo>";
+ 
+        //---------------------
+        //| GRUPO ==> FUNÇÕES
+        //---------------------
+        _xml_expressao << "    <grupo>";
+        _xml_expressao << "     <descricao>FUNÇÕES</descricao>";
+ 
+        //-----------------------------
+        //| SUB_GRUPO ==> CONDICIONAL
+        //-----------------------------
+        _xml_expressao << "     <sub_grupo>";
+        _xml_expressao << "         <descricao_sub>Condicional</descricao_sub>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Se</elemento>";
+        _xml_expressao << "             <funcao>Se( «teste_lógico» , «valor_se_verdadeiro» , «valor_se_falso» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Função condicional. Retorna um valor se a condição especificada for avaliada como VERDADEIRO e retorna um outro valor caso seja avaliada como FALSO. ;
+		{retorno: qualquer}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "     </sub_grupo>";
+ 
+        //-----------------------------
+        //| SUB_GRUPO ==> DATA
+        //-----------------------------
+        _xml_expressao << "     <sub_grupo>";
+        _xml_expressao << "         <descricao_sub>Data</descricao_sub>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Dia</elemento>";
+        _xml_expressao << "             <funcao>Dia( «data» )</funcao>";
+        _xml_expressao << "             <desc_funcao>O dia de uma data. ;{retorno: numérico}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Mes</elemento>";
+        _xml_expressao << "             <funcao>Mes( «data» )</funcao>";
+        _xml_expressao << "             <desc_funcao>O mês de uma data. ;{retorno: numérico}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Ano</elemento>";
+        _xml_expressao << "             <funcao>Ano( «data» )</funcao>";
+        _xml_expressao << "             <desc_funcao>O ano de uma data. ;{retorno: numérico}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Hora</elemento>";
+        _xml_expressao << "             <funcao>Hora( «data» )</funcao>";
+        _xml_expressao << "             <desc_funcao>A hora de uma data. ;{retorno: numérico}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Minuto</elemento>";
+        _xml_expressao << "             <funcao>Minuto( «data» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Os minutos de uma data. ;{retorno: numérico}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Segundo</elemento>";
+        _xml_expressao << "             <funcao>Segundo( «data» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Os segundos de uma data. ;{retorno: numérico}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Agora</elemento>";
+        _xml_expressao << "             <funcao>Agora( )</funcao>";
+        _xml_expressao << "             <desc_funcao>Retorna a data e o tempo atual. ;{retorno: data}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Data</elemento>";
+        _xml_expressao << "             <funcao>Data( «data» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Somente a parte de data de uma data.(excluindo a parte de tempo). ;{retorno: texto}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>DiaSemana</elemento>";
+        _xml_expressao << "             <funcao>DiaSemana( «data» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Retorna o dia da semana de uma data. ;{retorno: texto}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>DifData</elemento>";
+        _xml_expressao << "             <funcao>DifData( «texto_unidade» , «data01» , «data02» )</funcao>";
+        _xml_expressao << "             <desc_funcao>diferença entre duas datas. ;O resultado da diferença entre datas será fornecedo de acordo com os seguintes valores: ;A, M, D, H, N e S, que respectivamente indicam ano, mês, dia, hora, minuto e segundo. ;{retorno: numérico}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>FormataData</elemento>";
+        _xml_expressao << "             <funcao>FormataData( «data» , «texto_formato» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Retorna o valor de data formatado de acordo com o formato (máscara) definido. ;{retorno: texto};  ;Valores válidos:;DMA Data dd/mm/aaaa; ;MA Data mm/aaaa; ;EXDMA Data dd 'de' '(mês extenso)' 'de' aaaa; ;EXMA Data '(mês extenso)' 'de' aaaa; ;EXDM Data dd 'de' '(mês extenso)'; ;HNS Tempo hh:nn:ss ; HN Tempo hh:nn</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>GeraDataComTexto</elemento>";
+        _xml_expressao << "             <funcao>GeraDataComTexto( «data» , «texto_formato» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Gera uma data a partir do valor data informado, o valor informado deve estar de acordo com o formato (máscara) definido. ;{retorno: data}  ;Valores válidos:;DMA Data dd/mm/aaaa;  ;AMD Data aaaa/mm/dd; ;MDA Data mm/dd/aaaa   </desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>GeraData</elemento>";
+        _xml_expressao << "             <funcao>GeraData( «num_dia» , «num_mês» , «num_ano» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Gera uma data a partir de valores numéricos que representem dia, mês e ano. ;{retorno: data}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Hoje</elemento>";
+        _xml_expressao << "             <funcao>Hoje( )</funcao>";
+        _xml_expressao << "             <desc_funcao>Retorna a data atual. ;{retorno: data}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>MesExtenso</elemento>";
+        _xml_expressao << "             <funcao>MesExtenso( «data» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Retorna o mês por extenso de uma data. ;{retorno: texto}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>ReFormataData</elemento>";
+        _xml_expressao << "             <funcao>ReFormataData( «data» , «texto_formato_entrada», «texto_formato_saida» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Retorna o valor de data formatado de acordo com o formato (máscara) definido. ;{retorno: texto};  ;Valores válidos de entrada:  ;DMA Data dd/mm/aaaa;  ;AMD Data aaaa/mm/dd;  ;ADM Data aaaa/dd/mm;  ;DMATIME Data dd/mm/aaaa hh:mm:ss;  ;AMDTIME Data aaaa/mm/dd hh:mm:ss    ; ;Valores válidos de saída:  ;DMA Data dd/mm/aaaa; ; AAAA_MM_DD_TIME Data Hora aaaa-mm-dd hh:mm:ss ; ; AAAA_MM_DD Data aaaa-mm-dd ; ; DMATIME Data dd/mm/aaaa hh:mm:ss ; ; MA Data mm/aaaa;  ;EXDMA Data dd 'de' '(mês extenso)' 'de' aaaa;  ;EXMA Data '(mês extenso)' 'de' aaaa;  ;EXDM Data dd 'de' '(mês extenso)';  ;HNS Tempo hh:nn:ss ;  ;HN Tempo hh:nn</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>SomaData</elemento>";
+        _xml_expressao << "             <funcao>SomaData( «texto_unidade» , «numero_somar» , «data» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Retorna a data resultante do somatório de um valor numérico a uma data. ;A unidade do valor numérico a ser somado é dado de acordo com o valor do texto que pode ser: ;A, M, D, H, N e S, que respectivamente indicam ano, mês, dia, hora, minuto e segundo. ;{retorno: data}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>SubData</elemento>";
+        _xml_expressao << "             <funcao>SubData( «texto_unidade» , «numero_subtrair» , «data» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Retorna a data resultante da subtração de um valor numérico a uma data. ;A unidade do valor numérico a ser subtraído é dado de acordo com o valor do texto que pode ser: ;A, M, D, H, N e S, que respectivamente indicam ano, mês, dia, hora, minuto e segundo. ;{retorno: data}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Tempo</elemento>";
+        _xml_expressao << "             <funcao>Tempo( «data» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Somento a parte de tempo de uma data.(excluindo a parte de data). ;{retorno: texto}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>ZeraTempo</elemento>";
+        _xml_expressao << "             <funcao>ZeraTempo( «data» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Zera o tempo de uma data (hora, minuto e segundo). ;{retorno: data}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "     </sub_grupo>";
+ 
+        //-----------------------------
+        //| SUB_GRUPO ==> MATEMÁTICA
+        //-----------------------------
+        _xml_expressao << "     <sub_grupo>";
+        _xml_expressao << "         <descricao_sub>Matemática</descricao_sub>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Abs</elemento>";
+        _xml_expressao << "             <funcao>Abs( «numero» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Valor absoluto de um valor numérico. ;{retorno: numérico}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Arredondar</elemento>";
+        _xml_expressao << "             <funcao>Arredondar( «numero» , «num_precisão» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Arredonda um valor numérico para uma quantidade especificada de casas decimais (até seis). ;{retorno: numérico}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Caract</elemento>";
+        _xml_expressao << "             <funcao>Caract( «numero_cod_ascii» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Retorna o caractere especificado pelo código numérico ASCII. ;{retorno: texto}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>FormataNumero</elemento>";
+        _xml_expressao << "             <funcao>FormataNumero( «numero» , «texto_formato» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Retorna o valor numérico formatado de acordo com o formato (máscara) definido. ;{retorno: texto};  ;Valores válidos:; $0, $2, $4, $6, $8 Valor decimal com 0, 2, 4, 6 ou 8 casas decimais com separador de milhar; ;INT (Valor inteiro sem separador de milhar);  ;0-./:() ;numérico Ex: 0:0-0/0.0(00).</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>MoedaExtenso</elemento>";
+        _xml_expressao << "             <funcao>MoedaExtenso( «numero» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Retorna o texto de um valor numérico por extenso em formato moeda. ;{retorno: texto}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Raiz</elemento>";
+        _xml_expressao << "             <funcao>Raiz( «numero» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Raiz quadrada de um valor numérico. ;{retorno: numérico}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Texto</elemento>";
+        _xml_expressao << "             <funcao>Texto( «numero/lógico» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Converte um valor numérico ou um valor lógico para a forma textual. ;{retorno: texto}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Truncar</elemento>";
+        _xml_expressao << "             <funcao>Truncar( «numero» , «num_precisão» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Trunca um valor numérico para uma quantidade especificada de casas decimais (até seis). ;{retorno: numérico}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>ValorExtenso</elemento>";
+        _xml_expressao << "             <funcao>ValorExtenso( «numero» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Retorna texto de um valor numérico por extenso. ;{retorno: texto}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "     </sub_grupo>";
+ 
+        //-----------------------------
+        //| SUB_GRUPO ==> VALIDAÇÃO
+        //-----------------------------
+        _xml_expressao << "     <sub_grupo>";
+        _xml_expressao << "         <descricao_sub>Validação</descricao_sub>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>ValidaCPF</elemento>";
+        _xml_expressao << "             <funcao>ValidaCPF( «texto» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Retorna string com valor 'VERDADEIRO' ou 'FALSO', indicando se o CPF é válido ou não. ;{retorno: texto}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>ValidaCNPJ</elemento>";
+        _xml_expressao << "             <funcao>ValidaCNPJ( «texto» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Retorna string com valor 'VERDADEIRO' ou 'FALSO', indicando se o CNPJ é válido ou não. ;{retorno: texto}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>ValidaCNH</elemento>";
+        _xml_expressao << "             <funcao>ValidaCNH( «texto» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Retorna string com valor 'VERDADEIRO' ou 'FALSO', indicando se a CNH é válido ou não. ;{retorno: texto}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "     </sub_grupo>";
+ 
+        //-----------------------
+        //| SUB_GRUPO ==> TEXTO
+        //-----------------------
+        _xml_expressao << "     <sub_grupo>";
+        _xml_expressao << "         <descricao_sub>Texto</descricao_sub>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Codigo</elemento>";
+        _xml_expressao << "             <funcao>Codigo( «texto» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Retorna o código numérico ASCII para o primeiro caractere de uma seqüência de caracteres de texto. ;{retorno: numérico}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Copiar</elemento>";
+        _xml_expressao << "             <funcao>Copiar( «destino» , «origem» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Copia o valor do segundo parâmetro para o primeiro parâmetro.</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Direita</elemento>";
+        _xml_expressao << "             <funcao>Direita( «texto» , «num_caract» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Retorna o(s) últimos(s) caracteres em uma seqüência de caracteres de texto. ;{retorno: texto}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Esquerda</elemento>";
+        _xml_expressao << "             <funcao>Esquerda( «texto» , «num_caract» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Retorna o(s) primeiro(s) caracteres em uma seqüência de caracteres de texto. ;{retorno: texto}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Fonetica</elemento>";
+        _xml_expressao << "             <funcao>Fonetica( «texto» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Torna fonético o retorno da string. ;{retorno: texto}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>FormataTexto</elemento>";
+        _xml_expressao << "             <funcao>FormataTexto( «texto» , «texto_formato» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Retorna o texto formatado de acordo com o formato (máscara) definido. ;{retorno: texto}; ;Valores válidos: A-./:() Alfa numérico Ex: A:A.A/AA(AAA-AA);</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Localizar</elemento>";
+        _xml_expressao << "             <funcao>Localizar( «texto_princ» , «texto_local» , «num_pos_inicial» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Retorna a posição no qual um caractere ou uma seqüência de caracteres de texto foram localizados em um determinado texto a partir de uma posição inicial, sendo a leitura feita no texto da esquerda para a direita. ;{retorno: numérico}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>LocalizarRev</elemento>";
+        _xml_expressao << "             <funcao>LocalizarRev( «texto_princ» , «texto_local» , «num_pos_inicial» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Retorna a posição no qual um caractere ou uma seqüência de caracteres de texto foram localizados em um determinado texto a partir de uma posição inicial, sendo a leitura feita no texto da direita para a esquerda. ;{retorno: numérico}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Maiusculo</elemento>";
+        _xml_expressao << "             <funcao>Maiusculo( «texto» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Converte todos os caracteres de um texto para o formato maiúsculo. ;{retorno: texto}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Meio</elemento>";
+        _xml_expressao << "             <funcao>Meio( «texto» , «num_pos_inicial» , «num_caract» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Retorna a substring obtida de um texto a partir de uma posição inicial e com uma determinada quantidade de caracteres. ;Caso a quantidade de caracteres seja omitida será considerada para a mesma, o restante do texto. ;{retorno: texto}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Minusculo</elemento>";
+        _xml_expressao << "             <funcao>Minusculo( «texto» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Converte todos os caracteres de um texto para o formato minúsculo. ;{retorno: texto}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Mudar</elemento>";
+        _xml_expressao << "             <funcao>Mudar( «texto_princ» , «texto_antigo» , «texto_novo» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Substitui parte de uma seqüência de caracteres de texto por uma outra seqüência, contida em um texto principal. ;{retorno: texto}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>PriMaiusculo</elemento>";
+        _xml_expressao << "             <funcao>PriMaiusculo( «texto» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Converte para maiúscula a primeira letra de cada palavra de uma seqüência de caracteres de texto e converte as demais letras para minúsculas. ;{retorno: texto}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Replicar</elemento>";
+        _xml_expressao << "             <funcao>Replicar( «texto» , «numero_repetições» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Replica uma seqüência de caracteres por um determinado número de vezes. ;{retorno: texto}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Reverso</elemento>";
+        _xml_expressao << "             <funcao>Reverso( «texto» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Inverte uma seqüência de caracteres de texto. ;{retorno: texto}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>SemelhancaNome</elemento>";
+        _xml_expressao << "             <funcao>SemelhancaNomes( «texto1» , «texto2» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Calcula o percentual de Distância entre Strings. Algoritmo Levenshstein. ;{retorno: numérico}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Suprimir</elemento>";
+        _xml_expressao << "             <funcao>Suprimir( «texto» , «texto_caractere_a_suprimir» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Retira um determinado caractere existentes em uma seqüência de caracteres de texto. ;{retorno: texto}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Tamanho</elemento>";
+        _xml_expressao << "             <funcao>Tamanho( «texto» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Quantidade de caracteres em um texto. ;{retorno: numérico}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Valor</elemento>";
+        _xml_expressao << "             <funcao>Valor( «texto» )</funcao>";
+        _xml_expressao << "             <desc_funcao>Converte uma seqüência de caracteres de texto que representa um número em um valor numérico. ;{retorno: numérico}</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "     </sub_grupo>";
+ 
+        _xml_expressao << "    </grupo>";
+ 
+        //------------------------
+        //| GRUPO ==> OPERADORES
+        //------------------------
+        _xml_expressao << "    <grupo>";
+        _xml_expressao << "     <descricao>Operadores</descricao>";
+ 
+        //----------------------------
+        //| SUB_GRUPO ==> ARITMÉTICO
+        //----------------------------
+        _xml_expressao << "     <sub_grupo>";
+        _xml_expressao << "         <descricao_sub>Aritmético</descricao_sub>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Adição ( x + y )</elemento>";
+        _xml_expressao << "             <funcao>+</funcao>";
+        _xml_expressao << "             <desc_funcao>Operador de soma.</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Divisão ( x / y )</elemento>";
+        _xml_expressao << "             <funcao>/</funcao>";
+        _xml_expressao << "             <desc_funcao>Operador de divisão.</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Exponenciação ( x ^ y )</elemento>";
+        _xml_expressao << "             <funcao>^</funcao>";
+        _xml_expressao << "             <desc_funcao>Operador de exponenciação.</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Módulo ( x % y )</elemento>";
+        _xml_expressao << "             <funcao>%</funcao>";
+        _xml_expressao << "             <desc_funcao>Resto inteiro de uma Divisão numérica.</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Multiplicação ( x * y )</elemento>";
+        _xml_expressao << "             <funcao>*</funcao>";
+        _xml_expressao << "             <desc_funcao>Operador de multiplicação.</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>subtração ( x - y )</elemento>";
+        _xml_expressao << "             <funcao>-</funcao>";
+        _xml_expressao << "             <desc_funcao>Operador de subtração.</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "     </sub_grupo>";
+ 
+        //----------------------------
+        //| SUB_GRUPO ==> COMPARAÇÃO
+        //----------------------------
+        _xml_expressao << "     <sub_grupo>";
+        _xml_expressao << "         <descricao_sub>Comparação</descricao_sub>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Diferente ( x < > y )</elemento>";
+        _xml_expressao << "             <funcao> <; > </funcao>";
+        _xml_expressao << "             <desc_funcao>Operador de diferença.</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Igual ( x = y )</elemento>";
+        _xml_expressao << "             <funcao>=</funcao>";
+        _xml_expressao << "             <desc_funcao>Operador de igualdade.</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Maior ( x > y )</elemento>";
+        _xml_expressao << "             <funcao>></funcao>";
+        _xml_expressao << "             <desc_funcao>Operador de maior.</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Maior ou igual ( x >= y )</elemento>";
+        _xml_expressao << "             <funcao>></funcao>";
+        _xml_expressao << "             <desc_funcao>Operador de maior ou igual.</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Menor ( x < y )</elemento>";
+        _xml_expressao << "             <funcao> <; </funcao>";
+        _xml_expressao << "             <desc_funcao>Operador de menor.</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Menor ou igual ( x <= y )</elemento>";
+        _xml_expressao << "             <funcao><;</funcao>";
+        _xml_expressao << "             <desc_funcao>Operador de menor ou igual.</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "     </sub_grupo>";
+ 
+        //--------------------------
+        //| SUB_GRUPO ==> LÓGICO
+        //--------------------------
+        _xml_expressao << "     <sub_grupo>";
+        _xml_expressao << "         <descricao_sub>Lógico</descricao_sub>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>E ( x E y )</elemento>";
+        _xml_expressao << "             <funcao>E</funcao>";
+        _xml_expressao << "             <desc_funcao>Operador lógico 'E'.</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Ou ( x OU y )</elemento>";
+        _xml_expressao << "             <funcao>OU</funcao>";
+        _xml_expressao << "             <desc_funcao>Operador lógico 'OU'.</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Negação ( NEGADO x )</elemento>";
+        _xml_expressao << "             <funcao>NEGADO</funcao>";
+        _xml_expressao << "             <desc_funcao>Operador lógico de negação.</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "     </sub_grupo>";
+ 
+        //-----------------------------
+        //| SUB_GRUPO ==> SEPARADORES
+        //-----------------------------
+        _xml_expressao << "     <sub_grupo>";
+        _xml_expressao << "         <descricao_sub>Separadores</descricao_sub>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>(</elemento>";
+        _xml_expressao << "             <funcao>(</funcao>";
+        _xml_expressao << "             <desc_funcao>Abre parêntese.</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>)</elemento>";
+        _xml_expressao << "             <funcao>)</funcao>";
+        _xml_expressao << "             <desc_funcao>Fecha parêntese.</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>parênteses ( x )</elemento>";
+        _xml_expressao << "             <funcao>( )</funcao>";
+        _xml_expressao << "             <desc_funcao>Abre e fecha parênteses.</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "     </sub_grupo>";
+ 
+        //-----------------------
+        //| SUB_GRUPO ==> TEXTO
+        //-----------------------
+        _xml_expressao << "     <sub_grupo>";
+        _xml_expressao << "         <descricao_sub>Texto</descricao_sub>";
+ 
+        _xml_expressao << "         <item>";
+        _xml_expressao << "             <elemento>Concatenação ( x &#38; y )</elemento>";
+        _xml_expressao << "             <funcao>&#38;</funcao>";
+        _xml_expressao << "             <desc_funcao>Operador de concatenação.</desc_funcao>";
+        _xml_expressao << "         </item>";
+ 
+        _xml_expressao << "     </sub_grupo>";
+ 
+        _xml_expressao << "    </grupo>";
+ 
+        _xml_expressao << "</rocket.expression>";
