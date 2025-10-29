@@ -302,7 +302,7 @@ function validateStatement(statementStr, offset, fullScript) {
         // Concatenation validation
         // This regex finds terms (variables, strings, or function calls ending in ')')
         // that are followed by another term (variable, string, or function name), without a valid operator between them.
-        const concatRegex = /((?:@@[a-zA-Z0-9_.]+|\"[^\"]*\"|\'[^\']*\'|\)))\s+((?:@@[a-zA-Z0-9_.]+|\"[^\"]*\"|\'[^\']*\'|[a-zA-Z_][a-zA-Z0-9_]*))/g;
+        const concatRegex = /((?:@@[a-zA-Z0-9_.]+|\"[^\"]*\"|'[^']*'|\)))\s+((?:@@[a-zA-Z0-9_.]+|\"[^\"]*\"|'[^']*'|[a-zA-Z_][a-zA-Z0-9_]*))/g;
         let concatMatch;
         while ((concatMatch = concatRegex.exec(statementStr))) {
             const firstTerm = concatMatch[1].trim();
@@ -329,8 +329,7 @@ function validateStatement(statementStr, offset, fullScript) {
                 } else if (openParensCount > 0) { // Inside a function, a comma is more likely.
                     addCorrection(createCorrection(','));
                     addCorrection(createCorrection('&'));
-                } else {
-                    // Outside a function, an ampersand is more likely for concatenation.
+                } else { // Outside a function, an ampersand is more likely for concatenation.
                     addCorrection(createCorrection('&'));
                     addCorrection(createCorrection(','));
                 }
@@ -408,20 +407,22 @@ function validateStatement(statementStr, offset, fullScript) {
         // Function name validation
         if (char === '(') {
             const lookbehind = statementStr.substring(0, i).trimEnd();
-            const funcMatch = lookbehind.match(/([a-zA-Z_]+)$/);
+            const funcMatch = lookbehind.match(/([a-zA-Z_][a-zA-Z0-9_]*)$/);
             if (funcMatch) {
                 const funcName = funcMatch[1].toUpperCase();
                 if (!ROCKET_FUNCTIONS_SET.has(funcName)) {
                     const closest = findClosestFunction(funcName);
+                    const pos = lookbehind.lastIndexOf(funcMatch[1]);
                     if (closest) {
-                        const pos = lookbehind.lastIndexOf(funcMatch[1]);
-                        addError({ msg: `A função "${funcName}" não é reconhecida.`, pos });
+                        addError({ msg: `A função "${funcName}" não foi encontrada. Você quis dizer "${closest}"?`, pos });
                         const regex = new RegExp(`\\b${funcName}\\b`, 'i');
                         addCorrection({
-                            description: `Corrigir <code>${funcName}</code> para <code>${closest}</code>?`,
+                            description: `Você quis dizer <code>${closest}</code>?`,
                             apply: (f) => f.replace(regex, closest),
                             pos
                         });
+                    } else {
+                        addError({ msg: `A função "${funcName}" não foi encontrada.`, pos });
                     }
                 }
             }
@@ -434,15 +435,17 @@ function validateStatement(statementStr, offset, fullScript) {
         let noParenMatch;
         while ((noParenMatch = funcRegex.exec(statementStr)) !== null) {
             const pos = noParenMatch.index;
-            if (pos > 0 && statementStr[pos - 1].match(/[a-zA-Z0-9_"]/)) continue;
-            const errorMsg = `A função "${func}" deve ser seguida por '('.`;
+            // Evita falsos positivos dentro de outras palavras ou strings
+            if (pos > 0 && statementStr[pos - 1].match(/[a-zA-Z0-9_"']/)) continue;
+
+            const errorMsg = `A função "${func}" deve ser seguida por '('`;
             if (!errors.some(e => e.pos === pos + offset)) {
                 addError({ msg: errorMsg, pos });
                 const insertPos = noParenMatch.index + func.length;
                 addCorrection({
                     description: `Adicionar <code>(</code> após a função <code>${func}</code>.`,
-                    apply: (f) => f.slice(0, insertPos) + '(' + f.slice(insertPos),
-                    pos
+                    apply: (f) => f.slice(0, insertPos) + '()' + f.slice(insertPos), // Adiciona () para ser mais útil
+                    pos: insertPos
                 });
             }
         }
@@ -592,9 +595,7 @@ function loadSettings() {
 }
 
 
-function levenshtein(s1, s2){s1=s1.toLowerCase();s2=s2.toLowerCase();var costs=new Array();for(var i=0;i<=s1.length;i++){var lastValue=i;for(var j=0;j<=s2.length;j++){if(i==0)costs[j]=j;else{if(j>0){var newValue=costs[j-1];if(s1.charAt(i-1)!=s2.charAt(j-1))newValue=Math.min(Math.min(newValue,lastValue),costs[j])+1;costs[j-1]=lastValue;lastValue=newValue;}}}if(i>0)costs[s2.length]=lastValue;}return costs[s2.length];}
-function findClosestFunction(t){let e=Infinity,n=null;for(const o of ROCKET_FUNCTIONS){const r=levenshtein(t,o);r<e&&r<=2&&(e=r,n=o)}return n}
-function showSignatureHelp() {
+function levenshtein(s1, s2){s1=s1.toLowerCase();s2=s2.toLowerCase();var costs=new Array();for(var i=0;i<=s1.length;i++){var lastValue=i;for(var j=0;j<=s2.length;j++){if(i==0)costs[j]=j;else{if(j>0){var newValue=costs[j-1];if(s1.charAt(i-1)!=s2.charAt(j-1))newValue=Math.min(Math.min(newValue,lastValue),costs[j])+1;costs[j-1]=lastValue;lastValue=newValue;}}}if(i>0)costs[s2.length]=lastValue;}return costs[s2.length];}function findClosestFunction(t){let e=Infinity,n=null;for(const o of ROCKET_FUNCTIONS){const r=levenshtein(t,o);r<e&&r<=2&&(e=r,n=o)}return n}function showSignatureHelp() {
     const val = formulaInput.value;
     const cursorPos = formulaInput.selectionStart;
     let openParens = 0;
@@ -624,13 +625,23 @@ function showSignatureHelp() {
     }
 }
 let currentFocus;
-function showAutocomplete(t){const e=t.toUpperCase().split(/\(|\s|,|'|"|&|\+|-|\*|\//).pop();if(closeAllLists(),!e||"'"===t.slice(-1)||"\""===t.slice(-1))return!1;currentFocus=-1;const n=document.createElement("DIV");n.setAttribute("id","autocomplete-list"),n.setAttribute("class","autocomplete-items"),document.getElementById("formula-container").appendChild(n);const o=ROCKET_FUNCTIONS.filter(n=>n.startsWith(e));if(0===o.length){const r=findClosestFunction(e);if(r){const l=document.createElement("DIV");l.innerHTML=`<span class="did-you-mean">Você quis dizer: </span><strong>${r}</strong>?`,l.addEventListener("click",()=>applySuggestion(r,e)),n.appendChild(l)}}else o.forEach(t=>{const o=document.createElement("DIV");o.innerHTML=`<strong>${t.substr(0,e.length)}</strong>${t.substr(e.length)}`,o.addEventListener("click",()=>applySuggestion(t,e)),n.appendChild(o)});0===n.childElementCount&&closeAllLists()}
-function applySuggestion(t,e){const n=formulaInput.value,o=n.toUpperCase().lastIndexOf(e);formulaInput.value=n.substring(0,o)+t,closeAllLists(),formulaInput.focus(),validate()}
-function closeAllLists(){const t=document.getElementsByClassName("autocomplete-items");for(let e=0;e<t.length;e++)t[e].parentNode.removeChild(t[e])}
-function handleAutocompleteNav(t){let e=document.getElementById("autocomplete-list");if(e&&(e=e.getElementsByTagName("div")),!e||0===e.length)return;if(40==t.keyCode)currentFocus++,addActive(e);else if(38==t.keyCode)currentFocus--,addActive(e);else if(13==t.keyCode||9==t.keyCode){if(currentFocus>-1)t.preventDefault(),e[currentFocus].click()}else 27==t.keyCode&&closeAllLists()}
-function addActive(t){if(!t)return!1;removeActive(t),currentFocus>=t.length&&(currentFocus=0),currentFocus<0&&(currentFocus=t.length-1),t[currentFocus].classList.add("autocomplete-active")}
-function removeActive(t){for(let e=0;e<t.length;e++)t[e].classList.remove("autocomplete-active")}
-const processChange=debounce(()=>validate());formulaInput.addEventListener("input",()=>{processChange(),showAutocomplete(formulaInput.value),showSignatureHelp()}),formulaInput.addEventListener("keydown",handleAutocompleteNav),clearBtn.addEventListener("click",()=>{formulaInput.value="",resultadoEl.innerHTML="",localStorage.removeItem("rocket_formula_v2"),formulaInput.focus()}),window.addEventListener("load",()=>{const t=localStorage.getItem("rocket_formula_v2");t&&(formulaInput.value=t)}),document.addEventListener("click",t=>{t.target!==formulaInput&&closeAllLists()});
+function showAutocomplete(t){const e=t.toUpperCase().split(/\(|\s|,|'|"|&|\+|-|\*|\//).pop();if(closeAllLists(),!e||"'"===t.slice(-1)||"\""===t.slice(-1))return!1;currentFocus=-1;const n=document.createElement("DIV");n.setAttribute("id","autocomplete-list"),n.setAttribute("class","autocomplete-items"),document.getElementById("formula-container").appendChild(n);const o=ROCKET_FUNCTIONS.filter(n=>n.startsWith(e));if(0===o.length){const r=findClosestFunction(e);if(r){const l=document.createElement("DIV");l.innerHTML=`<span class="did-you-mean">Você quis dizer: </span><strong>${r}</strong>?`,l.addEventListener("click",()=>applySuggestion(r,e)),n.appendChild(l)}}else o.forEach(t=>{const o=document.createElement("DIV");o.innerHTML=`<strong>${t.substr(0,e.length)}</strong>${t.substr(e.length)}`,o.addEventListener("click",()=>applySuggestion(t,e)),n.appendChild(o)});0===n.childElementCount&&closeAllLists()}function applySuggestion(t,e){const n=formulaInput.value,o=n.toUpperCase().lastIndexOf(e);formulaInput.value=n.substring(0,o)+t,closeAllLists(),formulaInput.focus(),validate()}function closeAllLists(){const t=document.getElementsByClassName("autocomplete-items");for(let e=0;e<t.length;e++)t[e].parentNode.removeChild(t[e])}function handleAutocompleteNav(t){let e=document.getElementById("autocomplete-list");if(e&&(e=e.getElementsByTagName("div")),!e||0===e.length)return;if(40==t.keyCode)currentFocus++,addActive(e);else if(38==t.keyCode)currentFocus--,addActive(e);else if(13==t.keyCode||9==t.keyCode){if(currentFocus>-1)t.preventDefault(),e[currentFocus].click()}else 27==t.keyCode&&closeAllLists()}function addActive(t){if(!t)return!1;removeActive(t),currentFocus>=t.length&&(currentFocus=0),currentFocus<0&&(currentFocus=t.length-1),t[currentFocus].classList.add("autocomplete-active")}function removeActive(t){for(let e=0;e<t.length;e++)t[e].classList.remove("autocomplete-active")}
+const processChange=debounce(()=>validate());formulaInput.addEventListener("input",()=>{
+    processChange();
+    showAutocomplete(formulaInput.value);
+    showSignatureHelp();
+}),formulaInput.addEventListener("keydown",handleAutocompleteNav),clearBtn.addEventListener("click",()=>{
+    updateFormula('', true);
+    resultadoEl.innerHTML = "";
+    localStorage.removeItem("rocket_formula_v2");
+    formulaInput.focus();
+}),window.addEventListener("load",()=>{
+    const t=localStorage.getItem("rocket_formula_v2");
+    t&&(formulaInput.value=t)
+}),document.addEventListener("click",t=>{
+    t.target!==formulaInput&&closeAllLists()
+});
+
 const debouncedPushHistory = debounce(value => pushToHistory(value), 1000);
 
 formulaInput.addEventListener("input", () => {
