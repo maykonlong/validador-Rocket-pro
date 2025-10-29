@@ -176,152 +176,227 @@ function renderValidation() {
  * This is a complete rewrite of the validation logic using a stateful tokenizer.
  * It processes the formula string character by character, understanding the context (e.g., inside a string, function, variable).
  * This approach is more robust and avoids the cascading errors and incorrect correction placements of the previous regex-heavy implementation.
+ *
+ * UPDATE: This function now acts as a script runner, splitting the input by semicolons
+ * and validating each statement individually.
  */
-function parseAndValidate(formulaStr) {
+function parseAndValidate(scriptStr) {
+    const allErrors = [];
+    const allCorrections = [];
+    let overallIsValid = true;
+
+    // 1. Split script into statements by semicolon, but respect semicolons inside strings.
+    const statements = [];
+    let currentStatementStart = 0;
+    let inStringState = { inString: false, quoteType: null };
+
+    for (let i = 0; i < scriptStr.length; i++) {
+        const char = scriptStr[i];
+        if ((char === '"' || char === "'") && (i === 0 || scriptStr[i-1] !== '\\')) {
+            if (!inStringState.inString) {
+                inStringState = { inString: true, quoteType: char };
+            } else if (inStringState.quoteType === char) {
+                inStringState = { inString: false, quoteType: null };
+            }
+        }
+
+        if (char === ';' && !inStringState.inString) {
+            statements.push({
+                text: scriptStr.substring(currentStatementStart, i + 1),
+                offset: currentStatementStart
+            });
+            currentStatementStart = i + 1;
+        }
+    }
+    // Add the last statement if it doesn't end with a semicolon
+    if (currentStatementStart < scriptStr.length && scriptStr.substring(currentStatementStart).trim().length > 0) {
+        statements.push({
+            text: scriptStr.substring(currentStatementStart),
+            offset: currentStatementStart
+        });
+    }
+
+    // 2. Validate each statement
+    for (const statement of statements) {
+        const { isValid, errors, corrections } = validateStatement(statement.text, statement.offset, scriptStr);
+        if (!isValid) {
+            overallIsValid = false;
+        }
+        allErrors.push(...errors);
+        allCorrections.push(...corrections);
+    }
+
+    return { isValid: overallIsValid, errors: allErrors, corrections: allCorrections };
+}
+
+function validateStatement(statementStr, offset, fullScript) {
     const errors = [];
     const corrections = [];
-    const trimmedFormula = formulaStr.trim();
+    const trimmedStatement = statementStr.trim();
+
+    // This function contains the logic from the old parseAndValidate, but for a single statement.
+    // All position-based errors and corrections must have the offset added.
+
+    const createCorrectionWithOffset = (corr, originalFormula) => {
+        const newCorr = { ...corr };
+        newCorr.pos += offset;
+        
+        // The `apply` function needs to operate on the full script, not just the statement.
+        const originalApply = corr.apply;
+        newCorr.apply = (fullScript) => {
+            // To apply the change correctly, we reconstruct the script.
+            // This is a simplified approach. A more robust solution would involve a proper AST.
+            const statementToChange = fullScript.substring(offset, offset + statementStr.length);
+            const changedStatement = originalApply(statementToChange);
+            return fullScript.substring(0, offset) + changedStatement + fullScript.substring(offset + statementStr.length);
+        };
+        
+        // Re-calculate newFormula based on the full script
+        newCorr.newFormula = newCorr.apply(fullScript);
+
+        return newCorr;
+    };
+
+    const addError = (err) => errors.push({ ...err, pos: err.pos + offset });
+    const addCorrection = (corr) => corrections.push(createCorrectionWithOffset(corr, statementStr));
+
+    // --- Start of single-statement validation logic ---
+
+    // New validation for numbers that should be strings (like CPF/CNPJ)
+    const numericComparisonRegex = /(@@[a-zA-Z0-9_.]+)\s*=\s*(\d{11,})(?!["'])/g; // Negative lookahead to avoid matching if it's already a string
+    let numericMatch;
+    while ((numericMatch = numericComparisonRegex.exec(statementStr))) {
+        const variable = numericMatch[1];
+        const number = numericMatch[2];
+        const pos = numericMatch.index;
+
+        if (!isInsideString(pos, statementStr)) {
+            const errorMsg = `Comparação de variável com número literal. O número deve ser um texto (entre aspas).`;
+            addError({ msg: errorMsg, pos });
+
+            const correctionDesc = `Converter o número <code>${number}</code> para texto: <code>"${number}"</code>?`;
+            
+            const startIndex = numericMatch.index;
+
+            addCorrection({
+                description: correctionDesc,
+                apply: (f) => {
+                    const numIndex = f.indexOf(number, startIndex);
+                    if (numIndex !== -1) {
+                        return f.slice(0, numIndex) + `"${number}"` + f.slice(numIndex + number.length);
+                    }
+                    return f; // Should not happen
+                },
+                pos: startIndex
+            });
+        }
+    }
+
     const parensStack = [];
     let stringState = { inString: false, quoteType: null };
 
-    for (let i = 0; i < formulaStr.length; i++) {
-        const char = formulaStr[i];
-        const prevChar = formulaStr[i - 1];
+    for (let i = 0; i < statementStr.length; i++) {
+        const char = statementStr[i];
+        const prevChar = statementStr[i - 1];
 
-        // 0. Concatenation validation - Run this early to catch missing operators before misinterpreting strings.
+        // Concatenation validation
         // This regex finds terms (variables, strings, or function calls ending in ')')
-        // that are followed by another term, without a valid operator (&, ,, ;, etc.) between them.
-        const concatRegex = /((?:@@[a-zA-Z0-9_.]+|\"[^\"]*\"|\'[^\']*\'|\)))\s+((?:@@[a-zA-Z0-9_.]+|\"[^\"]*\"|\'[^\']*\'))/g;
+        // that are followed by another term (variable, string, or function name), without a valid operator between them.
+        const concatRegex = /((?:@@[a-zA-Z0-9_.]+|\"[^\"]*\"|\'[^\']*\'|\)))\s+((?:@@[a-zA-Z0-9_.]+|\"[^\"]*\"|\'[^\']*\'|[a-zA-Z_][a-zA-Z0-9_]*))/g;
         let concatMatch;
-        while ((concatMatch = concatRegex.exec(formulaStr))) {
+        while ((concatMatch = concatRegex.exec(statementStr))) {
             const firstTerm = concatMatch[1].trim();
             const secondTerm = concatMatch[2].trim();
             const pos = concatMatch.index + concatMatch[1].length;
-    
-            // To avoid false positives, check if we are inside a function's parentheses,
-            // where terms are separated by commas, not ampersands.
             let openParensCount = 0;
             for (let k = 0; k < concatMatch.index; k++) {
-                if (formulaStr[k] === '(' && !isInsideString(k, formulaStr)) openParensCount++;
-                if (formulaStr[k] === ')' && !isInsideString(k, formulaStr)) openParensCount--;
+                if (statementStr[k] === '(' && !isInsideString(k, statementStr)) openParensCount++;
+                if (statementStr[k] === ')' && !isInsideString(k, statementStr)) openParensCount--;
             }
-    
             const errorMsg = `Operador ausente entre '${firstTerm}' e '${secondTerm}'.`;
-            if (!errors.some(e => e.pos === pos)) {
-                errors.push({ msg: errorMsg, pos });
-    
-                // Helper to create correction objects
-                const createCorrection = (operator) => {
-                    const insertAt = formulaStr.indexOf(firstTerm, concatMatch.index) + firstTerm.length;
-                    const newFormula = formulaStr.slice(0, insertAt) + ` ${operator} ` + formulaStr.slice(insertAt).trimStart();
-                    return {
-                        description: `Adicionar <code>${operator}</code> entre <code>${firstTerm}</code> e <code>${secondTerm}</code>.`,
-                        newFormula: newFormula,
-                        // The 'apply' function receives the formula string 'f' as an argument when it's executed.
-                        apply: (f) => f.slice(0, f.indexOf(firstTerm, concatMatch.index) + firstTerm.length) + ` ${operator} ` + f.slice(f.indexOf(firstTerm, concatMatch.index) + firstTerm.length).trimStart(),
-                        pos
-                    };
-                };
+            if (!errors.some(e => e.pos === pos + offset)) {
+                addError({ msg: errorMsg, pos });
+                const createCorrection = (operator) => ({
+                    description: `Adicionar <code>${operator}</code> entre <code>${firstTerm}</code> e <code>${secondTerm}</code>?`,
+                    apply: (f) => f.slice(0, f.indexOf(firstTerm, concatMatch.index) + firstTerm.length) + ` ${operator} ` + f.slice(f.indexOf(firstTerm, concatMatch.index) + firstTerm.length).trimStart(),
+                    pos
+                });
 
-                const commaCorrection = createCorrection(',');
-                const ampersandCorrection = createCorrection('&');
-
-                // If inside a function call, the comma is the more likely intended operator.
-                if (openParensCount > 0) {
-                    corrections.push(commaCorrection);
-                    corrections.push(ampersandCorrection);
+                // If a statement ends with ')' and the next term is a function, it's likely a missing semicolon.
+                if (firstTerm.endsWith(')') && ROCKET_FUNCTIONS_SET.has(secondTerm.toUpperCase())) {
+                    addCorrection(createCorrection(';'));
+                    addCorrection(createCorrection(','));
+                } else if (openParensCount > 0) { // Inside a function, a comma is more likely.
+                    addCorrection(createCorrection(','));
+                    addCorrection(createCorrection('&'));
                 } else {
-                    // Otherwise, ampersand is more likely.
-                    corrections.push(ampersandCorrection);
-                    corrections.push(commaCorrection);
+                    // Outside a function, an ampersand is more likely for concatenation.
+                    addCorrection(createCorrection('&'));
+                    addCorrection(createCorrection(','));
                 }
             }
         }
-        // 0. Variable validation (`@` vs `@@`) - HIGHEST PRIORITY
-        if (char === '@' && prevChar !== '@' && formulaStr.substring(i, i + 2) !== '@@') {
-            // Only trigger if not inside a string
+
+        // Variable validation
+        if (char === '@' && prevChar !== '@' && statementStr.substring(i, i + 2) !== '@@') {
             if (!stringState.inString) {
-                errors.push({ msg: `Variável inválida. As variáveis devem começar com '@@'.`, pos: i });
-                const newFormula = formulaStr.slice(0, i) + '@@' + formulaStr.slice(i + 1);
-                if (!corrections.some(c => c.pos === i)) {
-                    corrections.push({
-                    description: `Corrigir <code>${formulaStr.substring(i, i + 1)}</code> para <code>@@</code>?`,
-                    newFormula,
-                    apply: (f) => f.slice(0, i) + '@@' + f.slice(i + 1),
-                    pos: i
+                addError({ msg: `Variável inválida. As variáveis devem começar com '@@'.`, pos: i });
+                if (!corrections.some(c => c.pos === i + offset)) {
+                    addCorrection({
+                        description: `Corrigir <code>${statementStr.substring(i, i + 1)}</code> para <code>@@</code>?`,
+                        apply: (f) => f.slice(0, i) + '@@' + f.slice(i + 1),
+                        pos: i
                     });
                 }
             }
         }
-         // 1. String validation
-         if (!stringState.inString) {
+
+        // String validation
+        if (!stringState.inString) {
             if ((char === '"' || char === "'") && prevChar !== '\\') {
                 // Check for invalid preceding characters to catch missing opening quotes like in `= 1"`.
-                const lookbehind = formulaStr.substring(0, i).trimEnd();
+                const lookbehind = statementStr.substring(0, i).trimEnd();
                 const lastCharOfLookbehind = lookbehind.slice(-1);
                 const validPrecedingChars = new Set(['=', ',', '(', '&', ';', '']); // '' for start of formula
-                // If the last char is a quote, it means a term just ended, and we are likely missing an operator, not an opening quote.
+
                 if (!validPrecedingChars.has(lastCharOfLookbehind) && lastCharOfLookbehind !== '"' && lastCharOfLookbehind !== "'") {
                     const errorMsg = `Aspas de abertura ausentes ou caractere inválido antes da string.`;
-                    const correctionDesc = `Envolver <code>${lookbehind.substring(lookbehind.lastIndexOf(' ') + 1)}</code> com aspas?`;
-                    errors.push({ msg: errorMsg, pos: i });
-
-                    // Find the start of the term that should be quoted.
                     const lastSpaceIndex = lookbehind.lastIndexOf(' ');
                     const termToQuote = lookbehind.substring(lastSpaceIndex + 1);
+                    const correctionDesc = `Envolver <code>${termToQuote}</code> com aspas?`;
+                    
+                    addError({ msg: errorMsg, pos: i });
+
                     const beforeTerm = lookbehind.substring(0, lastSpaceIndex + 1);
-
-                    const newFormula = beforeTerm + `"${termToQuote}"` + formulaStr.slice(i + 1);
-
-                    corrections.push({
+                    const startOfTerm = i - termToQuote.length;
+                    addCorrection({
                         description: correctionDesc,
-                        newFormula,
-                        apply: (f) => beforeTerm + `"${termToQuote}"` + f.slice(i + 1),
-                        pos: lastSpaceIndex + 1
+                        apply: (f) => {
+                            return f.substring(0, startOfTerm) + `"${termToQuote}"` + f.substring(i + 1);
+                        },
+                        pos: startOfTerm
                     });
-                    continue; // Continue to find other errors, but this part is handled.
+                    continue; // Continue to find other errors, but this part is handled for this statement.
                 }
 
                 stringState = { inString: true, quoteType: char, start: i };
             }
-        } else { // We are inside a string
+        } else {
             if (char === stringState.quoteType && prevChar !== '\\') {
                 stringState = { inString: false, quoteType: null, start: -1 };
-            } else if (char === ',' || char === ')') {
-                // Found a separator inside an unclosed string - this is the primary error we're fixing.
-                const stringContent = formulaStr.substring(stringState.start + 1, i).trimEnd();
-                const finalQuotePos = stringState.start + 1 + stringContent.length;
-                const quoteChar = stringState.quoteType;
-
-                const errorMsg = `String não terminada: '${stringContent}' não foi fechada.`;
-                const correctionDesc = `Adicionar aspas de fechamento <code>${quoteChar}</code> em <code>${stringContent}</code>.`;
-                errors.push({ msg: errorMsg, pos: finalQuotePos });
-
-                const newFormula = formulaStr.slice(0, finalQuotePos) + quoteChar + formulaStr.slice(finalQuotePos);
-                corrections.push({
-                    description: correctionDesc,
-                    newFormula,
-                    apply: (f) => f.slice(0, finalQuotePos) + quoteChar + f.slice(finalQuotePos),
-                    pos: finalQuotePos
-                });
-                // Skip the rest of the loop for this iteration as we found a critical error here.
-                continue;
             }
         }
 
-        // Skip other checks if inside a string
         if (stringState.inString) continue;
 
-        // 2. Parentheses validation
+        // Parentheses validation
         if (char === '(') {
             parensStack.push({ char: '(', pos: i });
         } else if (char === ')') {
             if (parensStack.length === 0) {
-                errors.push({ msg: `Parêntese de fechamento ')' inesperado ou em excesso.`, pos: i });
-                const newFormula = formulaStr.slice(0, i) + formulaStr.slice(i + 1);
-                corrections.push({
+                addError({ msg: `Parêntese de fechamento ')' inesperado ou em excesso.`, pos: i });
+                addCorrection({
                     description: `Remover parêntese de fechamento <code>)</code> excedente.`,
-                    newFormula,
                     apply: (f) => f.slice(0, i) + f.slice(i + 1),
                     pos: i
                 });
@@ -330,9 +405,9 @@ function parseAndValidate(formulaStr) {
             }
         }
 
-        // 3. Function name validation (simple version)
+        // Function name validation
         if (char === '(') {
-            const lookbehind = formulaStr.substring(0, i).trimEnd();
+            const lookbehind = statementStr.substring(0, i).trimEnd();
             const funcMatch = lookbehind.match(/([a-zA-Z_]+)$/);
             if (funcMatch) {
                 const funcName = funcMatch[1].toUpperCase();
@@ -340,12 +415,10 @@ function parseAndValidate(formulaStr) {
                     const closest = findClosestFunction(funcName);
                     if (closest) {
                         const pos = lookbehind.lastIndexOf(funcMatch[1]);
-                        errors.push({ msg: `A função "${funcName}" não é reconhecida.`, pos });
+                        addError({ msg: `A função "${funcName}" não é reconhecida.`, pos });
                         const regex = new RegExp(`\\b${funcName}\\b`, 'i');
-                        const newFormula = formulaStr.replace(regex, closest);
-                        corrections.push({
+                        addCorrection({
                             description: `Corrigir <code>${funcName}</code> para <code>${closest}</code>?`,
-                            newFormula,
                             apply: (f) => f.replace(regex, closest),
                             pos
                         });
@@ -355,26 +428,19 @@ function parseAndValidate(formulaStr) {
         }
     }
 
-    // 5. Check for function names not followed by a parenthesis
+    // Function names not followed by a parenthesis
     for (const func of ROCKET_FUNCTIONS) {
-        // This regex finds a function name (as a whole word)
-        // followed by zero or more spaces, and then NOT a '('.
-        // The negative lookahead `(?!\()` is key.
         const funcRegex = new RegExp(`\\b(${func})\\b\\s*(?!\\()`, 'gi');
         let noParenMatch;
-        while ((noParenMatch = funcRegex.exec(formulaStr)) !== null) {
+        while ((noParenMatch = funcRegex.exec(statementStr)) !== null) {
             const pos = noParenMatch.index;
-            
-            // Simple check to avoid flagging inside another word or string
-            if (pos > 0 && formulaStr[pos-1].match(/[a-zA-Z0-9_"]/)) continue;
-
+            if (pos > 0 && statementStr[pos - 1].match(/[a-zA-Z0-9_"]/)) continue;
             const errorMsg = `A função "${func}" deve ser seguida por '('.`;
-            if (!errors.some(e => e.pos === pos)) {
-                errors.push({ msg: errorMsg, pos });
+            if (!errors.some(e => e.pos === pos + offset)) {
+                addError({ msg: errorMsg, pos });
                 const insertPos = noParenMatch.index + func.length;
-                corrections.push({
+                addCorrection({
                     description: `Adicionar <code>(</code> após a função <code>${func}</code>.`,
-                    newFormula: formulaStr.slice(0, insertPos) + '(' + formulaStr.slice(insertPos),
                     apply: (f) => f.slice(0, insertPos) + '(' + f.slice(insertPos),
                     pos
                 });
@@ -382,28 +448,30 @@ function parseAndValidate(formulaStr) {
         }
     }
 
-    // Final checks after the loop
+    // Final checks for the statement
     if (stringState.inString) {
-        errors.push({ msg: "String não terminada. Verifique se todas as aspas foram fechadas corretamente.", pos: formulaStr.length });
+        addError({ msg: "String não terminada na declaração.", pos: statementStr.length });
     }
 
     if (parensStack.length > 0) {
         const missing = parensStack.length;
-        const pos = formulaStr.length;
-        errors.push({ msg: `${missing} parêntese(s) não fechado(s).`, pos });
-        const newFormula = formulaStr.slice(0, -1) + ')'.repeat(missing) + ';';
-        corrections.push({
+        const pos = statementStr.length - 1; // Before the semicolon
+        addError({ msg: `${missing} parêntese(s) não fechado(s).`, pos });
+        addCorrection({
             description: `Adicionar <code>${')'.repeat(missing)}</code> para fechar a expressão.`,
-            newFormula,
             apply: (f) => f.slice(0, -1) + ')'.repeat(missing) + ';',
             pos
         });
     }
 
-    if (!trimmedFormula.endsWith(';')) {
-        const pos = formulaStr.length;
-        errors.push({ msg: "A fórmula deve terminar com ';'.", pos });
-        corrections.push({ description: "Adicionar <code>;</code> no final da fórmula.", newFormula: formulaStr + ';', apply: (f) => f + ';', pos });
+    if (!trimmedStatement.endsWith(';')) {
+        const pos = statementStr.length;
+        addError({ msg: "Cada comando deve terminar com ';'.", pos });
+        addCorrection({
+            description: "Adicionar <code>;</code> no final do comando.",
+            apply: (f) => f + ';',
+            pos
+        });
     }
 
     return { isValid: errors.length === 0, errors, corrections };
