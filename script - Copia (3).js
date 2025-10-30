@@ -65,7 +65,6 @@ const ICONS = {
 // --- ELEMENTOS DA UI ---
 const formulaInput = document.getElementById('formula');
 const resultadoEl = document.getElementById('resultado');
-const highlighterEl = document.getElementById('highlighter');
 const signatureHelpEl = document.getElementById('signature-help');
 const clearBtn = document.getElementById('clearBtn');
 const undoBtn = document.getElementById('undoBtn');
@@ -75,7 +74,6 @@ const settingsPanel = document.getElementById('settings-panel');
 const settingsOverlay = document.getElementById('settings-overlay');
 const closeSettingsBtn = document.getElementById('close-settings-btn');
 const mainContent = document.getElementById('main-content');
-const copyBtn = document.getElementById('copyBtn');
 
 // --- GERENCIAMENTO DE ESTADO (HISTÓRICO) ---
 let history = [''];
@@ -94,7 +92,6 @@ function debounce(func, timeout = 300) {
 function renderValidation() {
     const val = formulaInput.value;
     resultadoEl.innerHTML = '';
-    highlighterEl.innerHTML = '';
     if (!val.trim()) return;
 
     const { isValid, errors, corrections } = parseAndValidate(val);
@@ -107,40 +104,15 @@ function renderValidation() {
     resultadoEl.appendChild(statusCard);
 
     // Card de Erros
-    const uniqueErrors = [...new Map(errors.map(e => [e.msg, e])).values()];
-    if (uniqueErrors.length > 0) {
-        // 1. Render highlights
-        let highlightedText = '';
-        let lastIndex = 0;
-        uniqueErrors.sort((a, b) => a.pos - b.pos).forEach((error, index) => {
-            const errorEnd = Math.min(val.length, error.pos + (String(error.term || val[error.pos] || '').length || 1));
-            
-            highlightedText += escapeHtml(val.substring(lastIndex, error.pos));
-            highlightedText += `<span class="error-highlight" data-error-pos="${error.pos}">${escapeHtml(val.substring(error.pos, errorEnd))}</span>`;
-            lastIndex = errorEnd;
-        });
-        highlightedText += escapeHtml(val.substring(lastIndex));
-        highlighterEl.innerHTML = highlightedText;
-
-        // 2. Render error list
+    if (errors.length > 0) {
         const errorsCard = document.createElement('div');
         errorsCard.id = 'errors-card';
         errorsCard.className = 'result-card';
         let errorsHtml = `<h3>${ICONS.error} Erros Encontrados</h3><div class="scroll-box"><ul>`;
-        uniqueErrors.forEach((error, index) => {
-            errorsHtml += `<li data-error-pos="${error.pos}"><span>${error.msg}</span></li>`;
-        });
+        [...new Set(errors.map(e => e.msg))].forEach(msg => { errorsHtml += `<li>${msg}</li>`; });
         errorsHtml += '</ul></div>';
         errorsCard.innerHTML = errorsHtml;
         resultadoEl.appendChild(errorsCard);
-
-        // 3. Add interactivity
-        document.querySelectorAll('#errors-card li').forEach(li => {
-            li.addEventListener('click', () => {
-                formulaInput.focus();
-                formulaInput.setSelectionRange(parseInt(li.getAttribute('data-error-pos')), parseInt(li.getAttribute('data-error-pos')));
-            });
-        });
     }
 
     // Card de Correções
@@ -299,7 +271,7 @@ function validateStatement(statementStr, offset, fullScript) {
         const pos = numericMatch.index;
 
         if (!isInsideString(pos, statementStr)) {
-            const errorMsg = `Comparação com número literal. O valor <code>${number}</code> deve ser um texto (entre aspas).`; // This message is already good.
+            const errorMsg = `Comparação de variável com número literal. O número deve ser um texto (entre aspas).`;
             addError({ msg: errorMsg, pos });
 
             const correctionDesc = `Converter o número <code>${number}</code> para texto: <code>"${number}"</code>?`;
@@ -330,10 +302,8 @@ function validateStatement(statementStr, offset, fullScript) {
         // Concatenation validation
         // This regex finds terms (variables, strings, or function calls ending in ')')
         // that are followed by another term (variable, string, or function name), without a valid operator between them.
-        // It now includes a negative lookahead to ignore known operators.
-        const concatRegex = /((?:@@[a-zA-Z0-9_.]+|\"[^\"]*\"|'[^']*'|\)))\s+(?!E\b|OU\b|NEGADO\b|[=<>+\-*\/%^])((?:@@[a-zA-Z0-9_.]+|\"[^\"]*\"|'[^']*'|[a-zA-Z_][a-zA-Z0-9_]*))/g;
+        const concatRegex = /((?:@@[a-zA-Z0-9_.]+|\"[^\"]*\"|\'[^\']*\'|\)))\s+((?:@@[a-zA-Z0-9_.]+|\"[^\"]*\"|\'[^\']*\'|[a-zA-Z_][a-zA-Z0-9_]*))/g;
         let concatMatch;
-
         while ((concatMatch = concatRegex.exec(statementStr))) {
             const firstTerm = concatMatch[1].trim();
             const secondTerm = concatMatch[2].trim();
@@ -343,8 +313,8 @@ function validateStatement(statementStr, offset, fullScript) {
                 if (statementStr[k] === '(' && !isInsideString(k, statementStr)) openParensCount++;
                 if (statementStr[k] === ')' && !isInsideString(k, statementStr)) openParensCount--;
             }
-            const errorMsg = `Operador ausente entre <code>${firstTerm}</code> e <code>${secondTerm}</code>.`;
-            if (!errors.some(e => e.pos === pos + offset)) { // Avoid duplicate errors for the same position
+            const errorMsg = `Operador ausente entre '${firstTerm}' e '${secondTerm}'.`;
+            if (!errors.some(e => e.pos === pos + offset)) {
                 addError({ msg: errorMsg, pos });
                 const createCorrection = (operator) => ({
                     description: `Adicionar <code>${operator}</code> entre <code>${firstTerm}</code> e <code>${secondTerm}</code>?`,
@@ -359,7 +329,8 @@ function validateStatement(statementStr, offset, fullScript) {
                 } else if (openParensCount > 0) { // Inside a function, a comma is more likely.
                     addCorrection(createCorrection(','));
                     addCorrection(createCorrection('&'));
-                } else { // Outside a function, an ampersand is more likely for concatenation.
+                } else {
+                    // Outside a function, an ampersand is more likely for concatenation.
                     addCorrection(createCorrection('&'));
                     addCorrection(createCorrection(','));
                 }
@@ -369,7 +340,7 @@ function validateStatement(statementStr, offset, fullScript) {
         // Variable validation
         if (char === '@' && prevChar !== '@' && statementStr.substring(i, i + 2) !== '@@') {
             if (!stringState.inString) {
-                addError({ msg: `Variável inválida. As variáveis devem começar com <code>@@</code>.`, pos: i, term: '@' });
+                addError({ msg: `Variável inválida. As variáveis devem começar com '@@'.`, pos: i });
                 if (!corrections.some(c => c.pos === i + offset)) {
                     addCorrection({
                         description: `Corrigir <code>${statementStr.substring(i, i + 1)}</code> para <code>@@</code>?`,
@@ -385,17 +356,16 @@ function validateStatement(statementStr, offset, fullScript) {
             if ((char === '"' || char === "'") && prevChar !== '\\') {
                 // Check for invalid preceding characters to catch missing opening quotes like in `= 1"`.
                 const lookbehind = statementStr.substring(0, i).trimEnd();
-                const lastTwoCharsOfLookbehind = lookbehind.slice(-2).trim();
-                const validPrecedingChars = new Set(['=', ',', '(', '&', ';', '', '<>', '>=', '<=', '<', '>', '+', '-', '*', '/', '^', '%']); // '' for start of formula
+                const lastCharOfLookbehind = lookbehind.slice(-1);
+                const validPrecedingChars = new Set(['=', ',', '(', '&', ';', '']); // '' for start of formula
 
-                // Check if the end of the lookbehind is not one of the valid single or double character operators.
-                if (!validPrecedingChars.has(lastTwoCharsOfLookbehind) && !validPrecedingChars.has(lastTwoCharsOfLookbehind.slice(-1)) && lastTwoCharsOfLookbehind !== '"' && lastTwoCharsOfLookbehind !== "'") {
-                    const errorMsg = `Aspas de abertura ausentes ou caractere inválido antes da string.`; // Mantido genérico pois a sugestão já destaca o termo.
+                if (!validPrecedingChars.has(lastCharOfLookbehind) && lastCharOfLookbehind !== '"' && lastCharOfLookbehind !== "'") {
+                    const errorMsg = `Aspas de abertura ausentes ou caractere inválido antes da string.`;
                     const lastSpaceIndex = lookbehind.lastIndexOf(' ');
                     const termToQuote = lookbehind.substring(lastSpaceIndex + 1);
                     const correctionDesc = `Envolver <code>${termToQuote}</code> com aspas?`;
                     
-                    addError({ msg: errorMsg, pos: i, term: termToQuote });
+                    addError({ msg: errorMsg, pos: i });
 
                     const beforeTerm = lookbehind.substring(0, lastSpaceIndex + 1);
                     const startOfTerm = i - termToQuote.length;
@@ -424,7 +394,7 @@ function validateStatement(statementStr, offset, fullScript) {
             parensStack.push({ char: '(', pos: i });
         } else if (char === ')') {
             if (parensStack.length === 0) {
-                addError({ msg: `Parêntese de fechamento <code>)</code> inesperado ou em excesso.`, pos: i, term: ')' });
+                addError({ msg: `Parêntese de fechamento ')' inesperado ou em excesso.`, pos: i });
                 addCorrection({
                     description: `Remover parêntese de fechamento <code>)</code> excedente.`,
                     apply: (f) => f.slice(0, i) + f.slice(i + 1),
@@ -438,60 +408,23 @@ function validateStatement(statementStr, offset, fullScript) {
         // Function name validation
         if (char === '(') {
             const lookbehind = statementStr.substring(0, i).trimEnd();
-            const funcMatch = lookbehind.match(/([a-zA-Z_][a-zA-Z0-9_]*)$/);
+            const funcMatch = lookbehind.match(/([a-zA-Z_]+)$/);
             if (funcMatch) {
                 const funcName = funcMatch[1].toUpperCase();
                 if (!ROCKET_FUNCTIONS_SET.has(funcName)) {
                     const closest = findClosestFunction(funcName);
-                    const pos = lookbehind.lastIndexOf(funcMatch[1]);
                     if (closest) {
-                        addError({ msg: `A função <code>${funcName}</code> não foi encontrada. Você quis dizer <code>${closest}</code>?`, pos, term: funcName });
+                        const pos = lookbehind.lastIndexOf(funcMatch[1]);
+                        addError({ msg: `A função "${funcName}" não é reconhecida.`, pos });
                         const regex = new RegExp(`\\b${funcName}\\b`, 'i');
                         addCorrection({
-                            description: `Você quis dizer <code>${closest}</code>?`,
+                            description: `Corrigir <code>${funcName}</code> para <code>${closest}</code>?`,
                             apply: (f) => f.replace(regex, closest),
                             pos
                         });
-                    } else {
-                        addError({ msg: `A função <code>${funcName}</code> não foi encontrada.`, pos, term: funcName });
                     }
                 }
             }
-        }
-    }
-
-    // New check for bare words that should be strings
-    const keywords = new Set(['E', 'OU', 'NEGADO', 'VERDADEIRO', 'FALSO']);
-    const bareWordRegex = /\b[a-zA-Z_][a-zA-Z0-9_]*\b/g;
-    let match;
-    while ((match = bareWordRegex.exec(statementStr))) {
-        const word = match[0];
-        const pos = match.index;
-
-        if (isInsideString(pos, statementStr)) continue;
-        if (keywords.has(word.toUpperCase())) continue;
-        if (ROCKET_FUNCTIONS_SET.has(word.toUpperCase())) continue;
-
-        let start = pos;
-        while(start > 0 && statementStr[start-1].match(/[\w.]/)) {
-            start--;
-        }
-        if (start > 1 && statementStr.substring(start-2, start) === '@@') {
-            continue;
-        }
-
-        if (statementStr.substring(pos + word.length).trim().startsWith('(')) {
-            continue;
-        }
-
-        const errorMsg = `O termo <code>${word}</code> não é reconhecido. Se for um texto, deve estar entre aspas.`;
-        if (!errors.some(e => e.pos === pos + offset)) {
-            addError({ msg: errorMsg, pos, term: word });
-            addCorrection({
-                description: `Converter <code>${word}</code> para texto (<code>'${word}'</code>)?`,
-                apply: (f) => f.slice(0, pos) + `'${word}'` + f.slice(pos + word.length),
-                pos
-            });
         }
     }
 
@@ -501,20 +434,15 @@ function validateStatement(statementStr, offset, fullScript) {
         let noParenMatch;
         while ((noParenMatch = funcRegex.exec(statementStr)) !== null) {
             const pos = noParenMatch.index;
-
-            if (isInsideString(pos, statementStr)) continue;
-
-            // Evita falsos positivos dentro de outras palavras, strings ou variáveis (nomes com @@, ., etc)
-            if (pos > 0 && statementStr[pos - 1].match(/[a-zA-Z0-9_"'@.]/)) continue;
-
-            const errorMsg = `A função <code>${func}</code> deve ser seguida por \'(\'.`;
+            if (pos > 0 && statementStr[pos - 1].match(/[a-zA-Z0-9_"]/)) continue;
+            const errorMsg = `A função "${func}" deve ser seguida por '('.`;
             if (!errors.some(e => e.pos === pos + offset)) {
-                addError({ msg: errorMsg, pos, term: func });
+                addError({ msg: errorMsg, pos });
                 const insertPos = noParenMatch.index + func.length;
                 addCorrection({
                     description: `Adicionar <code>(</code> após a função <code>${func}</code>.`,
-                    apply: (f) => f.slice(0, insertPos) + '()' + f.slice(insertPos), // Adiciona () para ser mais útil
-                    pos: insertPos
+                    apply: (f) => f.slice(0, insertPos) + '(' + f.slice(insertPos),
+                    pos
                 });
             }
         }
@@ -522,13 +450,13 @@ function validateStatement(statementStr, offset, fullScript) {
 
     // Final checks for the statement
     if (stringState.inString) {
-        addError({ msg: `String não terminada. Verifique se todas as aspas (<code>${stringState.quoteType}</code>) foram fechadas.`, pos: stringState.start, term: statementStr.substring(stringState.start) });
+        addError({ msg: "String não terminada na declaração.", pos: statementStr.length });
     }
 
     if (parensStack.length > 0) {
         const missing = parensStack.length;
-        const pos = parensStack[parensStack.length - 1].pos;
-        addError({ msg: `${missing} parêntese(s) não fechado(s).`, pos, term: '(' });
+        const pos = statementStr.length - 1; // Before the semicolon
+        addError({ msg: `${missing} parêntese(s) não fechado(s).`, pos });
         addCorrection({
             description: `Adicionar <code>${')'.repeat(missing)}</code> para fechar a expressão.`,
             apply: (f) => f.slice(0, -1) + ')'.repeat(missing) + ';',
@@ -538,7 +466,7 @@ function validateStatement(statementStr, offset, fullScript) {
 
     if (!trimmedStatement.endsWith(';')) {
         const pos = statementStr.length;
-        addError({ msg: "Cada comando deve terminar com <code>;</code>.", pos, term: ';' });
+        addError({ msg: "Cada comando deve terminar com ';'.", pos });
         addCorrection({
             description: "Adicionar <code>;</code> no final do comando.",
             apply: (f) => f + ';',
@@ -547,10 +475,6 @@ function validateStatement(statementStr, offset, fullScript) {
     }
 
     return { isValid: errors.length === 0, errors, corrections };
-}
-
-function escapeHtml(text) {
-    return text.replace(/[&<>"']/g, (match) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[match]));
 }
 
 function isInsideString(pos, text) {
@@ -668,7 +592,9 @@ function loadSettings() {
 }
 
 
-function levenshtein(s1, s2){s1=s1.toLowerCase();s2=s2.toLowerCase();var costs=new Array();for(var i=0;i<=s1.length;i++){var lastValue=i;for(var j=0;j<=s2.length;j++){if(i==0)costs[j]=j;else{if(j>0){var newValue=costs[j-1];if(s1.charAt(i-1)!=s2.charAt(j-1))newValue=Math.min(Math.min(newValue,lastValue),costs[j])+1;costs[j-1]=lastValue;lastValue=newValue;}}}if(i>0)costs[s2.length]=lastValue;}return costs[s2.length];}function findClosestFunction(t){let e=Infinity,n=null;for(const o of ROCKET_FUNCTIONS){const r=levenshtein(t,o);r<e&&r<=2&&(e=r,n=o)}return n}function showSignatureHelp() {
+function levenshtein(s1, s2){s1=s1.toLowerCase();s2=s2.toLowerCase();var costs=new Array();for(var i=0;i<=s1.length;i++){var lastValue=i;for(var j=0;j<=s2.length;j++){if(i==0)costs[j]=j;else{if(j>0){var newValue=costs[j-1];if(s1.charAt(i-1)!=s2.charAt(j-1))newValue=Math.min(Math.min(newValue,lastValue),costs[j])+1;costs[j-1]=lastValue;lastValue=newValue;}}}if(i>0)costs[s2.length]=lastValue;}return costs[s2.length];}
+function findClosestFunction(t){let e=Infinity,n=null;for(const o of ROCKET_FUNCTIONS){const r=levenshtein(t,o);r<e&&r<=2&&(e=r,n=o)}return n}
+function showSignatureHelp() {
     const val = formulaInput.value;
     const cursorPos = formulaInput.selectionStart;
     let openParens = 0;
@@ -698,23 +624,13 @@ function levenshtein(s1, s2){s1=s1.toLowerCase();s2=s2.toLowerCase();var costs=n
     }
 }
 let currentFocus;
-function showAutocomplete(t){const e=t.toUpperCase().split(/\(|\s|,|'|"|&|\+|-|\*|\//).pop();if(closeAllLists(),!e||"'"===t.slice(-1)||"\""===t.slice(-1))return!1;currentFocus=-1;const n=document.createElement("DIV");n.setAttribute("id","autocomplete-list"),n.setAttribute("class","autocomplete-items"),document.getElementById("formula-container").appendChild(n);const o=ROCKET_FUNCTIONS.filter(n=>n.startsWith(e));if(0===o.length){const r=findClosestFunction(e);if(r){const l=document.createElement("DIV");l.innerHTML=`<span class="did-you-mean">Você quis dizer: </span><strong>${r}</strong>?`,l.addEventListener("click",()=>applySuggestion(r,e)),n.appendChild(l)}}else o.forEach(t=>{const o=document.createElement("DIV");o.innerHTML=`<strong>${t.substr(0,e.length)}</strong>${t.substr(e.length)}`,o.addEventListener("click",()=>applySuggestion(t,e)),n.appendChild(o)});0===n.childElementCount&&closeAllLists()}function applySuggestion(t,e){const n=formulaInput.value,o=n.toUpperCase().lastIndexOf(e);formulaInput.value=n.substring(0,o)+t,closeAllLists(),formulaInput.focus(),validate()}function closeAllLists(){const t=document.getElementsByClassName("autocomplete-items");for(let e=0;e<t.length;e++)t[e].parentNode.removeChild(t[e])}function handleAutocompleteNav(t){let e=document.getElementById("autocomplete-list");if(e&&(e=e.getElementsByTagName("div")),!e||0===e.length)return;if(40==t.keyCode)currentFocus++,addActive(e);else if(38==t.keyCode)currentFocus--,addActive(e);else if(13==t.keyCode||9==t.keyCode){if(currentFocus>-1)t.preventDefault(),e[currentFocus].click()}else 27==t.keyCode&&closeAllLists()}function addActive(t){if(!t)return!1;removeActive(t),currentFocus>=t.length&&(currentFocus=0),currentFocus<0&&(currentFocus=t.length-1),t[currentFocus].classList.add("autocomplete-active")}function removeActive(t){for(let e=0;e<t.length;e++)t[e].classList.remove("autocomplete-active")}
-const processChange=debounce(()=>validate());formulaInput.addEventListener("input",()=>{
-    processChange();
-    showAutocomplete(formulaInput.value);
-    showSignatureHelp();
-}),formulaInput.addEventListener("keydown",handleAutocompleteNav),clearBtn.addEventListener("click",()=>{
-    updateFormula('', true);
-    resultadoEl.innerHTML = "";
-    localStorage.removeItem("rocket_formula_v2");
-    formulaInput.focus();
-}),window.addEventListener("load",()=>{
-    const t=localStorage.getItem("rocket_formula_v2");
-    t&&(formulaInput.value=t)
-}),document.addEventListener("click",t=>{
-    t.target!==formulaInput&&closeAllLists()
-});
-
+function showAutocomplete(t){const e=t.toUpperCase().split(/\(|\s|,|'|"|&|\+|-|\*|\//).pop();if(closeAllLists(),!e||"'"===t.slice(-1)||"\""===t.slice(-1))return!1;currentFocus=-1;const n=document.createElement("DIV");n.setAttribute("id","autocomplete-list"),n.setAttribute("class","autocomplete-items"),document.getElementById("formula-container").appendChild(n);const o=ROCKET_FUNCTIONS.filter(n=>n.startsWith(e));if(0===o.length){const r=findClosestFunction(e);if(r){const l=document.createElement("DIV");l.innerHTML=`<span class="did-you-mean">Você quis dizer: </span><strong>${r}</strong>?`,l.addEventListener("click",()=>applySuggestion(r,e)),n.appendChild(l)}}else o.forEach(t=>{const o=document.createElement("DIV");o.innerHTML=`<strong>${t.substr(0,e.length)}</strong>${t.substr(e.length)}`,o.addEventListener("click",()=>applySuggestion(t,e)),n.appendChild(o)});0===n.childElementCount&&closeAllLists()}
+function applySuggestion(t,e){const n=formulaInput.value,o=n.toUpperCase().lastIndexOf(e);formulaInput.value=n.substring(0,o)+t,closeAllLists(),formulaInput.focus(),validate()}
+function closeAllLists(){const t=document.getElementsByClassName("autocomplete-items");for(let e=0;e<t.length;e++)t[e].parentNode.removeChild(t[e])}
+function handleAutocompleteNav(t){let e=document.getElementById("autocomplete-list");if(e&&(e=e.getElementsByTagName("div")),!e||0===e.length)return;if(40==t.keyCode)currentFocus++,addActive(e);else if(38==t.keyCode)currentFocus--,addActive(e);else if(13==t.keyCode||9==t.keyCode){if(currentFocus>-1)t.preventDefault(),e[currentFocus].click()}else 27==t.keyCode&&closeAllLists()}
+function addActive(t){if(!t)return!1;removeActive(t),currentFocus>=t.length&&(currentFocus=0),currentFocus<0&&(currentFocus=t.length-1),t[currentFocus].classList.add("autocomplete-active")}
+function removeActive(t){for(let e=0;e<t.length;e++)t[e].classList.remove("autocomplete-active")}
+const processChange=debounce(()=>validate());formulaInput.addEventListener("input",()=>{processChange(),showAutocomplete(formulaInput.value),showSignatureHelp()}),formulaInput.addEventListener("keydown",handleAutocompleteNav),clearBtn.addEventListener("click",()=>{formulaInput.value="",resultadoEl.innerHTML="",localStorage.removeItem("rocket_formula_v2"),formulaInput.focus()}),window.addEventListener("load",()=>{const t=localStorage.getItem("rocket_formula_v2");t&&(formulaInput.value=t)}),document.addEventListener("click",t=>{t.target!==formulaInput&&closeAllLists()});
 const debouncedPushHistory = debounce(value => pushToHistory(value), 1000);
 
 formulaInput.addEventListener("input", () => {
@@ -723,13 +639,6 @@ formulaInput.addEventListener("input", () => {
     showSignatureHelp();
     debouncedPushHistory(formulaInput.value);
 });
-
-formulaInput.addEventListener('scroll', () => {
-    highlighterEl.scrollTop = formulaInput.scrollTop;
-    highlighterEl.scrollLeft = formulaInput.scrollLeft;
-});
-
-window.addEventListener('resize', processChange); // Revalida no redimensionamento da janela
 
 clearBtn.addEventListener("click", () => {
     updateFormula('', true);
@@ -760,31 +669,11 @@ function validate() {
 
 window.addEventListener("load", () => {
     loadSettings();
-
-    const formulaFromManual = localStorage.getItem("rocket_formula_to_test");
-    if (formulaFromManual) {
-        updateFormula(formulaFromManual, true);
-        localStorage.removeItem("rocket_formula_to_test");
+    const savedFormula = localStorage.getItem("rocket_formula_v2");
+    if (savedFormula) {
+        updateFormula(savedFormula, true);
     } else {
-        const savedFormula = localStorage.getItem("rocket_formula_v2");
-        if (savedFormula) {
-            updateFormula(savedFormula, true);
-        } else {
-            updateHistoryButtons();
-        }
+        updateHistoryButtons();
     }
-    
     validate();
-});
-
-copyBtn.addEventListener('click', () => {
-    navigator.clipboard.writeText(formulaInput.value).then(() => {
-        const originalText = copyBtn.textContent;
-        copyBtn.textContent = 'Copiado!';
-        setTimeout(() => {
-            copyBtn.textContent = originalText;
-        }, 1500);
-    }).catch(err => {
-        console.error('Falha ao copiar texto: ', err);
-    });
 });

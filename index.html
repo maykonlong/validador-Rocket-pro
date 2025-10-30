@@ -24,15 +24,15 @@
         <div id="main-content">
             <div id="editor-area">
                 <div id="formula-container" class="editor-wrapper">
+                    <div id="highlighter" class="editor-layer"></div>
                     <textarea id="formula" placeholder="Se( testes_lógicos , valor_se_verdadeiro , valor_se_falso );" autocomplete="off" spellcheck="false"></textarea>
                     <div id="signature-help"></div>
                 </div>
                 <div class="editor-buttons">
-                    <div class="history-buttons">
-                        <button id="undoBtn" class="editor-btn" disabled>Retornar</button>
-                        <button id="redoBtn" class="editor-btn" disabled>Avançar</button>
-                    </div>
+                    <button id="undoBtn" class="editor-btn" disabled>Retornar</button>
+                    <button id="redoBtn" class="editor-btn" disabled>Avançar</button>
                     <button id="clearBtn" class="editor-btn">Limpar</button>
+                    <button id="copyBtn" class="editor-btn">Copiar</button>
                 </div>
             </div>
             <div id="resultado"></div>

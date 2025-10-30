@@ -65,7 +65,30 @@ h2 { color: var(--primary-color); margin-top: 0; margin-bottom: 20px; font-weigh
 
 /* --- Editor --- */
 .editor-wrapper { position: relative; }
-textarea#formula { width: 100%; height: 350px; padding: 15px; border: 1px solid var(--border-color); border-radius: 5px; font-size: 16px; box-sizing: border-box; font-family: var(--font-family); background-color: var(--background-color); color: var(--text-color); resize: vertical; transition: all 0.3s ease-in-out; }
+
+.editor-layer, textarea#formula {
+    width: 100%;
+    height: 350px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    font-size: 16px;
+    line-height: 1.5;
+    box-sizing: border-box;
+    font-family: var(--font-family);
+    transition: all 0.3s ease-in-out;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+textarea#formula { 
+    background-color: transparent; 
+    color: var(--text-color); 
+    position: relative; 
+    z-index: 2; 
+    resize: none; /* Desativa o redimensionamento manual para manter a sincronia */
+}
+#highlighter { position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; overflow: hidden; white-space: pre-wrap; word-wrap: break-word; color: transparent; background-color: var(--editor-bg); }
 textarea#formula:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 15px var(--shadow-glow); }
 
 /* --- Layout da Área de Resultados --- */
@@ -121,7 +144,30 @@ textarea#formula:focus { outline: none; border-color: var(--primary-color); box-
 }
 
 #errors-card ul { margin: 0; padding-left: 20px; }
-#errors-card li { margin-bottom: 8px; }
+#errors-card li {
+    margin-bottom: 8px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 3px;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: flex-start;
+}
+#errors-card li:hover {
+    background-color: rgba(255, 92, 92, 0.1);
+}
+
+#errors-card code {
+    background-color: rgba(255, 92, 92, 0.15);
+    padding: 2px 5px;
+    border-radius: 4px;
+    color: var(--error-color);
+}
+
+.error-highlight {
+    text-decoration: underline wavy var(--error-color) 1px;
+    background-color: rgba(255, 92, 92, 0.1);
+}
 
 .correction-item {
     display: flex;
@@ -141,7 +187,7 @@ textarea#formula:focus { outline: none; border-color: var(--primary-color); box-
     color: var(--suggestion-color);
 }
 /* --- Botões --- */
-.editor-buttons { margin-top: 10px; display: flex; justify-content: space-between; gap: 10px; }
+.editor-buttons { margin-top: 10px; display: flex; justify-content: flex-end; gap: 10px; }
 .editor-btn, .apply-btn, .icon-btn {
     background-color: transparent;
     color: var(--text-color);
@@ -253,8 +299,19 @@ textarea#formula:focus { outline: none; border-color: var(--primary-color); box-
 
 /* --- Popups de Ajuda (Inteligência) --- */
 #signature-help { position: absolute; bottom: 100%; left: 10px; background-color: #3c3c3c; color: #ccc; padding: 5px 10px; border-radius: 4px; font-family: var(--font-family); font-size: 0.9em; z-index: 100; margin-bottom: 5px; display: none; animation: fadeIn 0.3s; pointer-events: none; }
-.autocomplete-items { position: absolute; border: 1px solid var(--border-color); z-index: 99; background-color: #3c3c3c; max-height: 220px; overflow-y: auto; width: 300px; }
-.autocomplete-items div { padding: 10px; cursor: pointer; color: var(--editor-text); border-bottom: 1px solid var(--border-color); text-align: left; }
+.autocomplete-items {
+    position: absolute;
+    top: 100%; /* Posiciona o popup abaixo do container do editor */
+    left: 0;
+    border: 1px solid var(--border-color);
+    z-index: 99;
+    background-color: #3c3c3c;
+    max-height: 220px;
+    overflow-y: auto;
+    width: 300px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+.autocomplete-items div { padding: 10px; cursor: pointer; color: var(--text-color); border-bottom: 1px solid var(--border-color); text-align: left; }
 .autocomplete-items div:last-child { border-bottom: none; }
 .autocomplete-items div:hover { background-color: #555; }
 .autocomplete-active { background-color: var(--primary-color) !important; color: #fff; }

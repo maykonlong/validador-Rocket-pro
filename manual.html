@@ -3,245 +3,321 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manual de Treinamento - Fórmulas Rocket</title>
+    <title>Manual de Fórmulas Rocket</title>
     <link rel="stylesheet" href="manual-style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
+    <div class="manual-container">
         <header>
-            <div class="header-title">
-                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
-                <h1>Manual de Treinamento</h1>
-            </div>
-            <p>Seu guia para dominar o Editor de Fórmulas Rocket</p>
+            <h1>Manual Interativo de Fórmulas</h1>
+            <p>Um guia completo para aprender e testar as funcionalidades do editor.</p>
         </header>
 
-        <section id="introducao">
-            <h2>1. Introdução</h2>
-            <p>Bem-vindo ao Editor de Fórmulas Rocket! Esta ferramenta foi projetada para ser um assistente inteligente, ajudando você a escrever, validar e corrigir fórmulas complexas de forma rápida e eficiente. Este manual irá guiá-lo por todos os recursos disponíveis.</p>
-        </section>
+        <nav class="toc">
+            <h2>Navegação Rápida</h2>
+            <a href="#sintaxe">Sintaxe Básica</a>
+            <a href="#funcoes">Funções Suportadas</a>
+            <a href="#exemplos">Exemplos Práticos</a>
+            <a href="#erros">Erros Comuns e Soluções</a>
+        </nav>
 
-        <section id="interface">
-            <h2>2. Conhecendo a Interface</h2>
-            <p>A interface é simples e dividida em duas áreas principais:</p>
-            <ul>
-                <li><strong>Área de Edição:</strong> O campo de texto onde você escreve e edita suas fórmulas.</li>
-                <li><strong>Área de Resultados:</strong> Abaixo do editor, onde o validador exibe o status, os erros encontrados e as sugestões de correção em tempo real.</li>
-            </ul>
-        </section>
+        <main>
+            <section id="sintaxe">
+                <h2>Sintaxe Básica</h2>
+                <p>A sintaxe das fórmulas é simples e poderosa. Entenda os componentes principais:</p>
+                <ul>
+                    <li><strong>Funções:</strong> Como <code>Se()</code>, <code>Maiusculo()</code>, etc. Sempre seguidas por parênteses.</li>
+                    <li><strong>Parâmetros:</strong> Valores passados para as funções, separados por vírgula. Ex: <code>SomaData( 'dias' , 10 , Hoje() )</code>.</li>
+                    <li><strong>Variáveis:</strong> Referências a campos do sistema, sempre começando com <code>@@</code>. Ex: <code>@@campo_nome</code>.</li>
+                    <li><strong>Texto (String):</strong> Qualquer texto literal deve estar entre aspas simples (<code>' '</code>) ou duplas (<code>" "</code>).</li>
+                    <li><strong>Operadores:</strong> Use <code>&</code> para concatenar textos, e <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code> para operações matemáticas.</li>
+                    <li><strong>Ponto e Vírgula:</strong> Cada comando ou instrução deve terminar com um ponto e vírgula (<code>;</code>).</li>
+                </ul>
+            </section>
 
-        <section id="primeiro-script">
-            <h2>3. Seu Primeiro Script: Passo a Passo</h2>
-            <p>Vamos criar uma fórmula que cumprimenta um usuário e mostra a data atual. Isso nos ajudará a entender os conceitos na prática.</p>
-            <div class="step">
-                <h4>Passo 1: Comece com um texto fixo (String)</h4>
-                <p>Toda string deve estar entre aspas. Não se esqueça do ponto e vírgula no final.</p>
-                <pre><code class="language-formula">"Olá, ";</code><button class="copy-btn" title="Copiar"></button></pre>
-            </div>
-            <div class="step">
-                <h4>Passo 2: Adicione uma variável</h4>
-                <p>Use o operador de concatenação <code>&</code> para unir a string com a variável do nome do usuário. Lembre-se que variáveis sempre começam com <code>@@</code>.</p>
-                <pre><code class="language-formula">"Olá, " & @@CTX.NOME_USUARIO;</code><button class="copy-btn" title="Copiar"></button></pre>
-            </div>
-            <div class="step">
-                <h4>Passo 3: Use uma função</h4>
-                <p>Vamos adicionar a data atual usando a função <code>Hoje()</code>. Continue usando o operador <code>&</code> para unir tudo.</p>
-                <pre><code class="language-formula">"Olá, " & @@CTX.NOME_USUARIO & ". Hoje é dia " & Hoje();</code><button class="copy-btn" title="Copiar"></button></pre>
-                <p><strong>Pronto!</strong> Você criou sua primeira fórmula funcional, combinando texto, uma variável e uma função.</p>
-            </div>
-        </section>
+            <section id="funcoes">
+                <h2>Funções Suportadas</h2>
+                <p>Abaixo está a lista completa de funções, organizadas por categoria.</p>
 
-        <section id="sintaxe">
-            <h2>3. A Anatomia de uma Fórmula</h2>
-            <p>Entender a estrutura básica é o primeiro passo para escrever qualquer fórmula.</p>
-            
-            <h3>Funções</h3>
-            <p>O bloco de construção principal. Possuem um nome e recebem argumentos entre parênteses.</p>
-            <pre><code>NomeDaFuncao( argumento1, argumento2 );</code></pre>
+                <h4>Data e Hora</h4>
+                <div class="function-entry">
+                    <p><code>Agora()</code></p>
+                    <p>Retorna a data e hora atuais.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>Ano( ‘data’ )</code></p>
+                    <p>Extrai o ano de uma data.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>Data( ‘data’ )</code></p>
+                    <p>Converte um valor para o tipo data.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>Dia( ‘data’ )</code></p>
+                    <p>Extrai o dia de uma data.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>DiaSemana( ‘data’ )</code></p>
+                    <p>Retorna o dia da semana por extenso.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>DifData( ‘unidade’, ‘data1’, ‘data2’ )</code></p>
+                    <p>Calcula a diferença entre duas datas em uma unidade específica ('dias', 'meses', 'anos').</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>FormataData( ‘data’, ‘formato’ )</code></p>
+                    <p>Formata uma data de acordo com um padrão (ex: 'dd/MM/yyyy').</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>GeraData( ‘dia’, ‘mês’, ‘ano’ )</code></p>
+                    <p>Cria uma data a partir de números de dia, mês e ano.</p>
+                </div>
+                 <div class="function-entry">
+                    <p><code>GeraDataComTexto( ‘data’, ‘formato’ )</code></p>
+                    <p>Cria uma data a partir de um texto e seu formato.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>Hoje()</code></p>
+                    <p>Retorna a data atual (sem a hora).</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>Hora( ‘data’ )</code></p>
+                    <p>Extrai a hora de uma data.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>Mes( ‘data’ )</code></p>
+                    <p>Extrai o mês de uma data.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>MesExtenso( ‘data’ )</code></p>
+                    <p>Retorna o nome do mês por extenso.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>Minuto( ‘data’ )</code></p>
+                    <p>Extrai o minuto de uma data.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>Segundo( ‘data’ )</code></p>
+                    <p>Extrai o segundo de uma data.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>SomaData( ‘unidade’, ‘valor’, ‘data’ )</code></p>
+                    <p>Soma um valor a uma data em uma unidade específica.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>SubData( ‘unidade’, ‘valor’, ‘data’ )</code></p>
+                    <p>Subtrai um valor de uma data em uma unidade específica.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>Tempo( ‘data’ )</code></p>
+                    <p>Retorna a hora de uma data no formato 'HH:mm:ss'.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>ZeraTempo( ‘data’ )</code></p>
+                    <p>Remove a informação de hora de uma data, mantendo apenas o dia.</p>
+                </div>
 
-            <h3>Variáveis</h3>
-            <p>Representam dados do sistema. Elas <strong>sempre</strong> devem começar com <code>@@</code>.</p>
-            <pre><code>@@CTX.NOME_CLIENTE</code></pre>
+                <h4>Texto</h4>
+                <div class="function-entry">
+                    <p><code>Caract( ‘código_ascii’ )</code></p>
+                    <p>Retorna o caractere correspondente a um código ASCII.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>Direita( ‘texto’, ‘num_caracteres’ )</code></p>
+                    <p>Retorna uma parte do final de um texto.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>Esquerda( ‘texto’, ‘num_caracteres’ )</code></p>
+                    <p>Retorna uma parte do início de um texto.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>Fonetica( ‘texto’ )</code></p>
+                    <p>Retorna a representação fonética de um texto.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>FormataTexto( ‘texto’, ‘formato’ )</code></p>
+                    <p>Aplica uma máscara de formatação a um texto (ex: CPF, CNPJ).</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>Localizar( ‘texto_procurar’, ‘texto_base’, [pos_inicial] )</code></p>
+                    <p>Encontra a posição de um texto dentro de outro.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>Maiusculo( ‘texto’ )</code></p>
+                    <p>Converte todo o texto para letras maiúsculas.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>Meio( ‘texto’, ‘pos_inicial’, ‘num_caracteres’ )</code></p>
+                    <p>Extrai uma parte do meio de um texto.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>Minusculo( ‘texto’ )</code></p>
+                    <p>Converte todo o texto para letras minúsculas.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>Mudar( ‘texto’, ‘antigo’, ‘novo’ )</code></p>
+                    <p>Substitui ocorrências de um texto por outro.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>PriMaiusculo( ‘texto’ )</code></p>
+                    <p>Converte a primeira letra de cada palavra para maiúscula.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>Replicar( ‘texto’, ‘vezes’ )</code></p>
+                    <p>Repete um texto um determinado número de vezes.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>Reverso( ‘texto’ )</code></p>
+                    <p>Inverte a ordem dos caracteres de um texto.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>Tamanho( ‘texto’ )</code></p>
+                    <p>Retorna o número de caracteres de um texto.</p>
+                </div>
 
-            <h3>Strings (Texto)</h3>
-            <p>Valores de texto fixos devem estar entre aspas duplas.</p>
-            <pre><code>"Olá, Mundo!"</code></pre>
+                <h4>Matemática e Numérica</h4>
+                <div class="function-entry">
+                    <p><code>Abs( ‘numero’ )</code></p>
+                    <p>Retorna o valor absoluto (positivo) de um número.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>Arredondar( ‘numero’, ‘precisão’ )</code></p>
+                    <p>Arredonda um número para uma quantidade de casas decimais.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>FormataNumero( ‘numero’, ‘formato’ )</code></p>
+                    <p>Formata um número com um padrão específico.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>MoedaExtenso( ‘numero’ )</code></p>
+                    <p>Converte um valor monetário para seu equivalente por extenso.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>Raiz( ‘numero’ )</code></p>
+                    <p>Calcula a raiz quadrada de um número.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>Truncar( ‘numero’, ‘precisão’ )</code></p>
+                    <p>Trunca um número para uma quantidade de casas decimais, sem arredondar.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>ValorExtenso( ‘numero’ )</code></p>
+                    <p>Converte um número para seu equivalente por extenso.</p>
+                </div>
 
-            <h3>Concatenação (Unir Textos)</h3>
-            <p>Para unir diferentes partes (variáveis e textos), use o operador <code>&</code>.</p>
-            <pre><code>"Cliente: " & @@CTX.NOME_CLIENTE & " (ativo)";</code></pre>
+                <h4>Validação e Conversão</h4>
+                <div class="function-entry">
+                    <p><code>Codigo( ‘texto’ )</code></p>
+                    <p>Retorna o código ASCII do primeiro caractere de um texto.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>SemelhancaNomes( ‘texto1’, ‘texto2’ )</code></p>
+                    <p>Calcula a semelhança fonética entre dois nomes.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>Texto( ‘valor’ )</code></p>
+                    <p>Converte um número ou lógico para texto.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>ValidaCNH( ‘texto’ )</code></p>
+                    <p>Verifica se um número de CNH é válido.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>ValidaCNPJ( ‘texto’ )</code></p>
+                    <p>Verifica se um número de CNPJ é válido.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>ValidaCPF( ‘texto’ )</code></p>
+                    <p>Verifica se um número de CPF é válido.</p>
+                </div>
+                <div class="function-entry">
+                    <p><code>Valor( ‘texto’ )</code></p>
+                    <p>Converte um texto que representa um número para o tipo numérico.</p>
+                </div>
 
-            <h3>Ponto e Vírgula (;)</h3>
-            <p>Toda fórmula <strong>deve</strong> terminar com um ponto e vírgula.</p>
-        </section>
+                <h4>Lógica e Estrutura</h4>
+                <div class="function-entry">
+                    <p><code>Se( ‘teste_lógico’, ‘valor_verdadeiro’, ‘valor_falso’ )</code></p>
+                    <p>Executa um de dois valores com base em uma condição lógica.</p>
+                </div>
+                 <div class="function-entry">
+                    <p><code>Copiar( ‘destino’, ‘origem’ )</code></p>
+                    <p>Copia o valor de uma variável de origem para uma de destino.</p>
+                </div>
 
-        <section id="operadores">
-            <h2>4. Operadores Essenciais</h2>
-            <p>Operadores são símbolos que executam ações entre valores e variáveis.</p>
-            <ul>
-                <li><strong>Aritméticos:</strong> Usados para cálculos matemáticos. Ex: <code>+</code> (soma), <code>-</code> (subtração), <code>*</code> (multiplicação), <code>/</code> (divisão).</li>
-                <li><strong>Comparação:</strong> Usados em testes lógicos, principalmente com a função <code>Se()</code>. Ex: <code>=</code> (igual), <code><></code> (diferente), <code>></code> (maior que), <code><</code> (menor que).</li>
-                <li><strong>Lógicos:</strong> Usados para combinar múltiplos testes lógicos. Ex: <code>E</code> (ambas as condições devem ser verdadeiras), <code>OU</code> (pelo menos uma condição deve ser verdadeira).</li>
-                <li><strong>Concatenação:</strong> O operador <code>&</code> é usado exclusivamente para unir textos e variáveis.</li>
-            </ul>
-        </section>
+            </section>
 
-        <section id="erros-comuns">
-            <h2>4. Erros Comuns e Como Corrigi-los</h2>
-            <p>O validador é seu melhor amigo. Ele identifica erros e sugere correções. Aqui estão os mais comuns:</p>
-            <div class="error-example">
-                <h4>Erro: Falta de Operador de Concatenação</h4>
-                <p><strong>Incorreto:</strong> <code>@@VARIAVEL1 "TEXTO"</code></p>
-                <p><strong>Causa:</strong> Dois termos juntos sem um operador para uni-los.</p>
-                <p><strong>Correção Sugerida:</strong> O validador irá sugerir adicionar o <code>&</code> entre eles.</p>
-                <p><strong>Correto:</strong> <code>@@VARIAVEL1 & "TEXTO"</code></p>
-            </div>
-            <div class="error-example">
-                <h4>Erro: String não Fechada</h4>
-                <p><strong>Incorreto:</strong> <code>Se( @@VAR = "1", "OK , "ERRO" )</code></p>
-                <p><strong>Causa:</strong> Uma aspa de fechamento está faltando antes da vírgula.</p>
-                <p><strong>Correção Sugerida:</strong> O validador irá sugerir fechar a string no local correto.</p>
-                <p><strong>Correto:</strong> <code>Se( @@VAR = "1", "OK", "ERRO" )</code></p>
-            </div>
-            <div class="error-example">
-                <h4>Erro: Variável Inválida</h4>
-                <p><strong>Incorreto:</strong> <code>@CTX.NOME</code></p>
-                <p><strong>Causa:</strong> A variável começou com apenas um <code>@</code>.</p>
-                <p><strong>Correção Sugerida:</strong> O validador irá sugerir a correção para <code>@@</code>.</p>
-                <p><strong>Correto:</strong> <code>@@CTX.NOME</code></p>
-            </div>
-        </section>
-
-        <section id="referencia">
-            <h2>6. Referência de Funções</h2>
-            <p>Abaixo está uma lista de todas as funções disponíveis no sistema.</p>
-            <input type="text" id="searchInput" onkeyup="filterFunctions()" placeholder="Pesquisar por função...">
-            <div id="functions-list">
-                <!-- Os cards de função serão inseridos aqui via JavaScript -->
-            </div>
-        </section>
-
-    </div>
-
-    <script>
-        const FUNCTIONS_METADATA = {
-            "SE": { signature: "Se( teste_lógico, valor_se_verdadeiro, valor_se_falso )", description: "Retorna um valor se a condição for VERDADEIRA e outro valor se for FALSA.", category: "Condicional", returns: 'any' },
-            "DIA": { signature: "Dia( data )", description: "Retorna o dia de uma data (1-31).", category: "Data", returns: 'numeric' },
-            "MES": { signature: "Mes( data )", description: "Retorna o mês de uma data (1-12).", category: "Data", returns: 'numeric' },
-            "ANO": { signature: "Ano( data )", description: "Retorna o ano de uma data.", category: "Data", returns: 'numeric' },
-            "HORA": { signature: "Hora( data )", description: "Retorna a hora de uma data (0-23).", category: "Data", returns: 'numeric' },
-            "MINUTO": { signature: "Minuto( data )", description: "Retorna o minuto de uma data (0-59).", category: "Data", returns: 'numeric' },
-            "SEGUNDO": { signature: "Segundo( data )", description: "Retorna o segundo de uma data (0-59).", category: "Data", returns: 'numeric' },
-            "AGORA": { signature: "Agora()", description: "Retorna a data e hora atuais do sistema.", category: "Data", returns: 'date' },
-            "DATA": { signature: "Data( data_hora )", description: "Extrai apenas a parte da data (dia, mês, ano) de um valor de data e hora.", category: "Data", returns: 'text' },
-            "DIASEMANA": { signature: "DiaSemana( data )", description: "Retorna o nome do dia da semana para uma data (ex: 'Segunda-feira').", category: "Data", returns: 'text' },
-            "DIFDATA": { signature: "DifData( unidade, data_inicial, data_final )", description: "Calcula a diferença entre duas datas na unidade especificada ('A', 'M', 'D', 'H', 'N', 'S').", category: "Data", returns: 'numeric' },
-            "FORMATADATA": { signature: "FormataData( data, formato )", description: "Formata uma data em um texto de acordo com uma máscara (ex: 'DMA', 'HNS').", category: "Data", returns: 'text' },
-            "GERADATACOMTEXTO": { signature: "GeraDataComTexto( texto_data, formato )", description: "Cria um valor de data a partir de um texto formatado (ex: '31/12/2025').", category: "Data", returns: 'date' },
-            "GERADATA": { signature: "GeraData( dia, mes, ano )", description: "Cria uma data a partir de números de dia, mês e ano.", category: "Data", returns: 'date' },
-            "HOJE": { signature: "Hoje()", description: "Retorna a data atual do sistema (sem a hora).", category: "Data", returns: 'date' },
-            "MESEXTENSO": { signature: "MesExtenso( data )", description: "Retorna o nome do mês por extenso (ex: 'Janeiro').", category: "Data", returns: 'text' },
-            "REFORMATADATA": { signature: "ReFormataData( data, formato_entrada, formato_saida )", description: "Converte uma data de um formato de texto para outro.", category: "Data", returns: 'text' },
-            "SOMADATA": { signature: "SomaData( unidade, valor, data )", description: "Adiciona um valor a uma data em uma unidade específica ('A', 'M', 'D', 'H', 'N', 'S').", category: "Data", returns: 'date' },
-            "SUBDATA": { signature: "SubData( unidade, valor, data )", description: "Subtrai um valor de uma data em uma unidade específica ('A', 'M', 'D', 'H', 'N', 'S').", category: "Data", returns: 'date' },
-            "TEMPO": { signature: "Tempo( data_hora )", description: "Extrai apenas a parte da hora (hora, minuto, segundo) de um valor de data e hora.", category: "Data", returns: 'text' },
-            "ZERATEMPO": { signature: "ZeraTempo( data )", description: "Zera a parte de tempo (hora, minuto, segundo) de uma data.", category: "Data", returns: 'date' },
-            "ABS": { signature: "Abs( numero )", description: "Retorna o valor absoluto (positivo) de um número.", category: "Matemática", returns: 'numeric' },
-            "ARREDONDAR": { signature: "Arredondar( numero, precisao )", description: "Arredonda um número para um número especificado de casas decimais.", category: "Matemática", returns: 'numeric' },
-            "CARACT": { signature: "Caract( codigo_ascii )", description: "Retorna o caractere correspondente a um código numérico ASCII.", category: "Texto", returns: 'text' },
-            "FORMATANUMERO": { signature: "FormataNumero( numero, formato )", description: "Formata um número como texto usando uma máscara (ex: '$2' para moeda).", category: "Matemática", returns: 'text' },
-            "MOEDAEXTENSO": { signature: "MoedaExtenso( numero )", description: "Converte um valor numérico para seu equivalente em texto por extenso, como em um cheque.", category: "Matemática", returns: 'text' },
-            "RAIZ": { signature: "Raiz( numero )", description: "Calcula a raiz quadrada de um número.", category: "Matemática", returns: 'numeric' },
-            "TEXTO": { signature: "Texto( valor )", description: "Converte um valor numérico ou lógico para sua representação em texto.", category: "Texto", returns: 'text' },
-            "TRUNCAR": { signature: "Truncar( numero, precisao )", description: "Remove as casas decimais de um número sem arredondar.", category: "Matemática", returns: 'numeric' },
-            "VALOREXTENSO": { signature: "ValorExtenso( numero )", description: "Converte um número para seu equivalente em texto por extenso.", category: "Matemática", returns: 'text' },
-            "VALIDACPF": { signature: "ValidaCPF( texto_cpf )", description: "Verifica se um texto corresponde a um CPF válido. Retorna 'VERDADEIRO' ou 'FALSO'.", category: "Validação", returns: 'text' },
-            "VALIDACNPJ": { signature: "ValidaCNPJ( texto_cnpj )", description: "Verifica se um texto corresponde a um CNPJ válido. Retorna 'VERDADEIRO' ou 'FALSO'.", category: "Validação", returns: 'text' },
-            "VALIDACNH": { signature: "ValidaCNH( texto_cnh )", description: "Verifica se um texto corresponde a uma CNH válida. Retorna 'VERDADEIRO' ou 'FALSO'.", category: "Validação", returns: 'text' },
-            "CODIGO": { signature: "Codigo( texto )", description: "Retorna o código numérico ASCII do primeiro caractere de um texto.", category: "Texto", returns: 'numeric' },
-            "COPIAR": { signature: "Copiar( destino, origem )", description: "Copia o valor da origem para o destino. Usado para atribuir valores a variáveis.", category: "Lógica", returns: 'any' },
-            "DIREITA": { signature: "Direita( texto, num_caracteres )", description: "Retorna um número especificado de caracteres a partir do final de um texto.", category: "Texto", returns: 'text' },
-            "ESQUERDA": { signature: "Esquerda( texto, num_caracteres )", description: "Retorna um número especificado de caracteres a partir do início de um texto.", category: "Texto", returns: 'text' },
-            "FONETICA": { signature: "Fonetica( texto )", description: "Retorna uma representação fonética de um texto.", category: "Texto", returns: 'text' },
-            "FORMATATEXTO": { signature: "FormataTexto( texto, formato )", description: "Aplica uma máscara de formatação a um texto (ex: para CEP, telefone).", category: "Texto", returns: 'text' },
-            "LOCALIZAR": { signature: "Localizar( texto_procurado, texto_base, pos_inicial )", description: "Encontra a posição inicial de um texto dentro de outro, da esquerda para a direita.", category: "Texto", returns: 'numeric' },
-            "LOCALIZARREV": { signature: "LocalizarRev( texto_procurado, texto_base, pos_inicial )", description: "Encontra a posição inicial de um texto dentro de outro, da direita para a esquerda.", category: "Texto", returns: 'numeric' },
-            "MAIUSCULO": { signature: "Maiusculo( texto )", description: "Converte todo o texto para letras maiúsculas.", category: "Texto", returns: 'text' },
-            "MEIO": { signature: "Meio( texto, pos_inicial, num_caracteres )", description: "Extrai uma parte de um texto a partir de uma posição e tamanho definidos.", category: "Texto", returns: 'text' },
-            "MINUSCULO": { signature: "Minusculo( texto )", description: "Converte todo o texto para letras minúsculas.", category: "Texto", returns: 'text' },
-            "MUDAR": { signature: "Mudar( texto_base, texto_antigo, texto_novo )", description: "Substitui todas as ocorrências de um texto por outro dentro do texto base.", category: "Texto", returns: 'text' },
-            "PRIMAISCULO": { signature: "PriMaiusculo( texto )", description: "Converte a primeira letra de cada palavra para maiúscula.", category: "Texto", returns: 'text' },
-            "REPLICAR": { signature: "Replicar( texto, repeticoes )", description: "Repete um texto um determinado número de vezes.", category: "Texto", returns: 'text' },
-            "REVERSO": { signature: "Reverso( texto )", description: "Inverte a ordem dos caracteres de um texto.", category: "Texto", returns: 'text' },
-            "SEMELHANCANOME": { signature: "SemelhancaNomes( texto1, texto2 )", description: "Calcula o percentual de semelhança entre dois textos (algoritmo Levenshtein).", category: "Texto", returns: 'numeric' },
-            "SUPRIMIR": { signature: "Suprimir( texto, caracteres_a_suprimir )", description: "Remove todos os caracteres especificados de um texto.", category: "Texto", returns: 'text' },
-            "TAMANHO": { signature: "Tamanho( texto )", description: "Retorna o número de caracteres em um texto.", category: "Texto", returns: 'numeric' },
-            "VALOR": { signature: "Valor( texto )", description: "Converte um texto que representa um número para um valor numérico.", category: "Texto", returns: 'numeric' },
-        };
-
-        function populateFunctionsList() {
-            const listContainer = document.getElementById('functions-list');
-            listContainer.innerHTML = ''; // Limpa a lista
-
-            for (const funcName in FUNCTIONS_METADATA) {
-                const funcData = FUNCTIONS_METADATA[funcName];
+            <section id="exemplos">
+                <h2>Exemplos Práticos</h2>
+                <p>A melhor forma de aprender é praticando. Use os botões para enviar os exemplos direto para o editor.</p>
                 
-                const card = document.createElement('div');
-                card.className = 'function-card';
-                card.setAttribute('data-name', funcName.toUpperCase());
-
-                card.innerHTML = `
-                    <div class="card-header">
-                        <h3>${funcName}</h3>
-                        <div class="tags">
-                            <span class="tag tag-category">${funcData.category}</span>
-                            <span class="tag tag-return return-${funcData.returns}">${funcData.returns}</span>
-                        </div>
+                <div class="example">
+                    <div class="example-left">
+                        <h4>Concatenar Nome e Sobrenome</h4>
+                        <p>Junta o nome e o sobrenome de um cliente em um único campo de texto.</p>
+                        <pre><code><span class="func">Maiusculo</span>(<span class="var">@@nome</span> & <span class="str">' '</span> & <span class="var">@@sobrenome</span>);</code></pre>
+                        <button class="test-btn" data-formula="Maiusculo(@@nome & ' ' & @@sobrenome);">Testar no Editor</button>
                     </div>
-                    <p class="description">${funcData.description}</p>
-                    <pre><code class="language-formula">${funcData.signature}</code><button class="copy-btn" title="Copiar"></button></pre>
-                `;
-                listContainer.appendChild(card);
-            }
-        }
+                    <div class="example-right">
+                        <h4>Resultado Esperado</h4>
+                        <p>Se <code>@@nome</code> for "João" e <code>@@sobrenome</code> for "Silva", o resultado será "JOÃO SILVA".</p>
+                    </div>
+                </div>
 
-        function filterFunctions() {
-            const input = document.getElementById('searchInput');
-            const filter = input.value.toUpperCase();
-            const cards = document.querySelectorAll('.function-card');
+                <div class="example">
+                    <div class="example-left">
+                        <h4>Calcular a data de vencimento</h4>
+                        <p>Soma 30 dias à data de emissão de um documento para obter o vencimento.</p>
+                        <pre><code><span class="func">SomaData</span>(<span class="str">'dias'</span>, <span class="num">30</span>, <span class="var">@@data_emissao</span>);</code></pre>
+                        <button class="test-btn" data-formula="SomaData('dias', 30, @@data_emissao);">Testar no Editor</button>
+                    </div>
+                    <div class="example-right">
+                        <h4>Resultado Esperado</h4>
+                        <p>Se <code>@@data_emissao</code> for 15/10/2025, o resultado será a data 14/11/2025.</p>
+                    </div>
+                </div>
+            </section>
 
-            cards.forEach(card => {
-                const funcName = card.getAttribute('data-name');
-                if (funcName.includes(filter)) {
-                    card.style.display = "";
-                } else {
-                    card.style.display = "none";
-                }
-            });
-        }
+            <section id="erros">
+                <h2>Erros Comuns e Soluções</h2>
+                <p>Veja alguns dos erros mais frequentes e como corrigi-los.</p>
 
-        function setupCopyButtons() {
-            document.body.addEventListener('click', function(event) {
-                if (event.target.classList.contains('copy-btn')) {
-                    const pre = event.target.closest('pre');
-                    const code = pre.querySelector('code');
-                    navigator.clipboard.writeText(code.innerText).then(() => {
-                        event.target.classList.add('copied');
-                        setTimeout(() => {
-                            event.target.classList.remove('copied');
-                        }, 1500);
-                    });
-                }
-            });
-        }
+                <div class="example">
+                    <div class="example-left">
+                        <h4>Erro: Ponto e vírgula ausente</h4>
+                        <p>Toda instrução precisa terminar com <code>;</code>.</p>
+                        <pre><code class="error-code">Se(@@valor > 100, 'Alto', 'Baixo')</code></pre>
+                        <h4>Correção</h4>
+                        <pre><code>Se(@@valor > 100, 'Alto', 'Baixo');</code></pre>
+                        <button class="test-btn" data-formula="Se(@@valor > 100, 'Alto', 'Baixo')">Testar Erro</button>
+                    </div>
+                    <div class="example-right">
+                        <h4>Explicação</h4>
+                        <p>O validador irá detectar a ausência do ponto e vírgula e sugerir a correção automática.</p>
+                    </div>
+                </div>
 
-        window.onload = () => {
-            populateFunctionsList();
-            setupCopyButtons();
-        };
-    </script>
+                 <div class="example">
+                    <div class="example-left">
+                        <h4>Erro: Aspas ausentes em texto</h4>
+                        <p>Valores de texto literal precisam de aspas.</p>
+                        <pre><code class="error-code">@@campo = Ativo;</code></pre>
+                        <h4>Correção</h4>
+                        <pre><code>@@campo = 'Ativo';</code></pre>
+                        <button class="test-btn" data-formula="@@campo = Ativo;">Testar Erro</button>
+                    </div>
+                    <div class="example-right">
+                        <h4>Explicação</h4>
+                        <p>O validador identifica que "Ativo" provavelmente deveria ser um texto e sugere adicionar aspas.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="manual-script.js" defer></script>
+    <a href="#top" id="back-to-top-btn" class="back-to-top-btn" title="Voltar ao topo">&#8679;</a>
 </body>
 </html>

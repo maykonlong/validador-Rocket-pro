@@ -1,32 +1,32 @@
+/* --- Tema e Estrutura Global --- */
 :root {
     --primary-color: #00aeff;
+    --success-color: #73ff9a;
+    --error-color: #ff5c5c;
     --background-color: #1a1a1a;
-    --card-bg: #212121;
+    --editor-bg: #212121;
     --text-color: #e0e0e0;
     --border-color: #444;
     --font-family-code: 'Fira Code', 'Courier New', Courier, monospace;
-    --font-family-text: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-family-sans: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 body {
-    font-family: var(--font-family-text);
+    font-family: var(--font-family-sans);
     background-color: var(--background-color);
     color: var(--text-color);
-    margin: 20px;
-    padding: 0;
+    margin: 0;
+    padding: 20px;
     line-height: 1.6;
-    border: 4px solid var(--primary-color);
 }
 
-.container {
-    background-color: var(--card-bg);
-    padding: 25px 40px;
+.manual-container {
+    max-width: 900px;
+    margin: 0 auto;
+    background-color: var(--editor-bg);
+    padding: 30px;
     border-radius: 8px;
     border: 1px solid var(--border-color);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    width: 100%;
-    max-width: 900px;
-    margin: 20px auto;
 }
 
 header {
@@ -36,15 +36,9 @@ header {
     margin-bottom: 30px;
 }
 
-.header-title {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-}
-
 header h1 {
     color: var(--primary-color);
+    font-weight: 500;
     margin: 0;
 }
 
@@ -55,173 +49,188 @@ header p {
 
 section {
     margin-bottom: 40px;
+    padding-top: 20px; /* Espaço para a âncora */
 }
 
-h2 {
+section h2 {
     color: var(--primary-color);
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid var(--border-color);
     padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+/* --- Sumário (TOC) --- */
+.toc {
+    background-color: rgba(0,0,0,0.2);
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 30px;
+}
+
+.toc h2 {
+    border: none;
     margin-top: 0;
+    font-size: 1.2em;
 }
 
-ul {
-    padding-left: 20px;
-}
-
-li {
-    margin-bottom: 10px;
-}
-
-code, pre {
-    font-family: var(--font-family-code);
-    background-color: #2c2c2c;
+.toc a {
+    display: inline-block;
+    margin: 5px 10px 5px 0;
+    color: var(--text-color);
+    text-decoration: none;
+    padding: 8px 12px;
     border-radius: 4px;
+    background-color: var(--border-color);
+    transition: background-color 0.2s, color 0.2s;
 }
 
-code {
-    padding: 0.2em 0.4em;
-    font-size: 0.9em;
+.toc a:hover {
+    background-color: var(--primary-color);
+    color: var(--editor-bg);
+}
+
+/* --- Estilos de Código --- */
+pre, code {
+    font-family: var(--font-family-code);
+    font-size: 15px;
 }
 
 pre {
-    padding: 15px;
-    border: 1px solid var(--border-color);
-    overflow-x: auto;
-}
-
-.step {
-    background-color: #2a2a2a;
-    padding: 15px 20px;
-    margin-bottom: 15px;
-    border-left: 3px solid var(--primary-color);
-    border-radius: 0 4px 4px 0;
-}
-
-.step h4 {
-    margin-top: 0;
-    color: var(--primary-color);
-    font-weight: 500;
-}
-
-
-.error-example {
-    background-color: #2a2a2a;
-    border-left: 3px solid #ff5c5c;
-    padding: 15px;
-    margin-bottom: 15px;
-    border-radius: 0 4px 4px 0;
-}
-
-.error-example h4 {
-    margin-top: 0;
-    color: #ff9a9a;
-}
-
-/* Seção de Referência */
-#searchInput {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 20px;
-    border-radius: 4px;
-    border: 1px solid var(--border-color);
     background-color: #2c2c2c;
-    color: var(--text-color);
-    font-size: 1em;
+    padding: 15px;
+    border-radius: 5px;
+    overflow-x: auto;
+    border: 1px solid #555;
 }
 
-#functions-list {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 20px;
+code {
+    background-color: rgba(0,0,0,0.3);
+    padding: 2px 5px;
+    border-radius: 3px;
 }
 
-.function-card {
-    background-color: #2a2a2a;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 20px;
-    transition: transform 0.2s, box-shadow 0.2s;
+pre > code {
+    padding: 0;
+    background-color: transparent;
 }
 
-.function-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+.error-code {
+    background-color: rgba(255, 92, 92, 0.1);
+    border-left: 3px solid var(--error-color);
+    padding: 10px;
+    display: block;
 }
 
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 10px;
+/* Destaque de Sintaxe */
+.func { color: #61afef; }
+.var { color: #e06c75; }
+.str { color: #98c379; }
+.num { color: #d19a66; }
+
+/* --- Lista de Funções --- */
+.function-entry {
+    background-color: #2c2c2c;
+    padding: 10px 15px;
+    border-radius: 4px;
+    border-left: 3px solid var(--primary-color);
+    margin-bottom: 15px;
 }
 
-.card-header h3 {
+.function-entry p {
     margin: 0;
-    color: var(--primary-color);
 }
 
-.tags {
-    display: flex;
-    gap: 8px;
-}
-
-.tag {
-    padding: 3px 8px;
-    border-radius: 10px;
-    font-size: 0.8em;
+.function-entry p:first-child {
     font-weight: bold;
-    background-color: #555;
-    color: white;
+    margin-bottom: 5px;
 }
 
-.tag-category { background-color: #666; }
-.return-numeric { background-color: #2962ff; }
-.return-text { background-color: #00c853; }
-.return-date { background-color: #d500f9; }
-.return-any { background-color: #ffab00; }
-.return-lógica { background-color: #ff5c5c; }
-
-.function-card .description {
-    margin: 0 0 15px 0;
-    color: #ccc;
+#funcoes h4 {
+    color: var(--success-color);
+    margin-top: 30px;
+    margin-bottom: 10px;
+    font-size: 1.3em;
 }
 
-.function-card pre {
-    position: relative;
+/* --- Botão Voltar ao Topo --- */
+.back-to-top-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: var(--primary-color);
+    color: var(--editor-bg);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    text-decoration: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s, background-color 0.2s;
+    z-index: 100;
 }
 
-.copy-btn {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%239e9e9e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>') center no-repeat;
-    border: none;
-    width: 30px;
-    height: 30px;
-    cursor: pointer;
-    opacity: 0.6;
-    transition: opacity 0.2s;
-}
-.copy-btn:hover { opacity: 1; }
-.copy-btn.copied {
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="%2373ff9a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>');
+.back-to-top-btn.show {
     opacity: 1;
+    visibility: visible;
 }
 
-/* Responsividade */
+.back-to-top-btn:hover {
+    background-color: #0098d6;
+}
+
+/* --- Exemplos --- */
+.example {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    background-color: rgba(0,0,0,0.1);
+    padding: 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.example-left, .example-right {
+    padding: 0;
+}
+
+.example h4 {
+    margin-top: 0;
+    color: var(--success-color);
+}
+
+.example-right h4 {
+    color: var(--suggestion-color);
+}
+
+/* --- Botão de Teste --- */
+.test-btn {
+    background-color: var(--primary-color);
+    color: var(--editor-bg);
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: bold;
+    transition: background-color 0.2s;
+    margin-top: 10px;
+}
+
+.test-btn:hover {
+    background-color: #0098d6;
+}
+
+/* --- Responsividade --- */
 @media (max-width: 768px) {
-    .container {
-        padding: 20px;
-        margin: 0;
+    .example {
+        grid-template-columns: 1fr;
     }
-    body {
-        margin: 0;
-        border: none;
-    }
-}
-
-@media (min-width: 992px) {
-    #functions-list {
-        grid-template-columns: 1fr 1fr; /* Duas colunas em telas maiores */
+    .function-list {
+        grid-template-columns: 1fr;
     }
 }
