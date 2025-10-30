@@ -30,236 +30,91 @@
                 <p>A sintaxe das fórmulas é simples e poderosa. Entenda os componentes principais:</p>
                 <ul>
                     <li><strong>Funções:</strong> Como <code>Se()</code>, <code>Maiusculo()</code>, etc. Sempre seguidas por parênteses.</li>
-                    <li><strong>Parâmetros:</strong> Valores passados para as funções, separados por vírgula. Ex: <code>SomaData( 'dias' , 10 , Hoje() )</code>.</li>
+                    <li><strong>Parâmetros:</strong> Valores passados para as funções, separados por vírgula. Ex: <code>SomaData("dias", 10, Hoje());</code>.</li>
                     <li><strong>Variáveis:</strong> Referências a campos do sistema, sempre começando com <code>@@</code>. Ex: <code>@@campo_nome</code>.</li>
-                    <li><strong>Texto (String):</strong> Qualquer texto literal deve estar entre aspas simples (<code>' '</code>) ou duplas (<code>" "</code>).</li>
-                    <li><strong>Operadores:</strong> Use <code>&</code> para concatenar textos, e <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code> para operações matemáticas.</li>
+                    <li><strong>Texto (String):</strong> Qualquer texto literal deve estar entre <strong>aspas duplas</strong> (<code>" "</code>). Aspas simples (<code>' '</code>) não são permitidas para garantir consistência.</li>
+                    <li><strong>Operadores:</strong> Use <code>&</code> para concatenar textos, e <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code> para operações matemáticas. Operadores lógicos como <code>E</code>, <code>OU</code> e de comparação como <code>></code>, <code><</code>, <code>=</code> também são suportados.</li>
                     <li><strong>Ponto e Vírgula:</strong> Cada comando ou instrução deve terminar com um ponto e vírgula (<code>;</code>).</li>
                 </ul>
             </section>
 
             <section id="funcoes">
                 <h2>Funções Suportadas</h2>
-                <p>Abaixo está a lista completa de funções, organizadas por categoria.</p>
+                <p>Abaixo está a lista completa de funções, organizadas por categoria. Clique no botão para copiar a sintaxe.</p>
 
                 <h4>Data e Hora</h4>
-                <div class="function-entry">
-                    <p><code>Agora()</code></p>
-                    <p>Retorna a data e hora atuais.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>Ano( ‘data’ )</code></p>
-                    <p>Extrai o ano de uma data.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>Data( ‘data’ )</code></p>
-                    <p>Converte um valor para o tipo data.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>Dia( ‘data’ )</code></p>
-                    <p>Extrai o dia de uma data.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>DiaSemana( ‘data’ )</code></p>
-                    <p>Retorna o dia da semana por extenso.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>DifData( ‘unidade’, ‘data1’, ‘data2’ )</code></p>
-                    <p>Calcula a diferença entre duas datas em uma unidade específica ('dias', 'meses', 'anos').</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>FormataData( ‘data’, ‘formato’ )</code></p>
-                    <p>Formata uma data de acordo com um padrão (ex: 'dd/MM/yyyy').</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>GeraData( ‘dia’, ‘mês’, ‘ano’ )</code></p>
-                    <p>Cria uma data a partir de números de dia, mês e ano.</p>
-                </div>
-                 <div class="function-entry">
-                    <p><code>GeraDataComTexto( ‘data’, ‘formato’ )</code></p>
-                    <p>Cria uma data a partir de um texto e seu formato.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>Hoje()</code></p>
-                    <p>Retorna a data atual (sem a hora).</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>Hora( ‘data’ )</code></p>
-                    <p>Extrai a hora de uma data.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>Mes( ‘data’ )</code></p>
-                    <p>Extrai o mês de uma data.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>MesExtenso( ‘data’ )</code></p>
-                    <p>Retorna o nome do mês por extenso.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>Minuto( ‘data’ )</code></p>
-                    <p>Extrai o minuto de uma data.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>Segundo( ‘data’ )</code></p>
-                    <p>Extrai o segundo de uma data.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>SomaData( ‘unidade’, ‘valor’, ‘data’ )</code></p>
-                    <p>Soma um valor a uma data em uma unidade específica.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>SubData( ‘unidade’, ‘valor’, ‘data’ )</code></p>
-                    <p>Subtrai um valor de uma data em uma unidade específica.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>Tempo( ‘data’ )</code></p>
-                    <p>Retorna a hora de uma data no formato 'HH:mm:ss'.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>ZeraTempo( ‘data’ )</code></p>
-                    <p>Remove a informação de hora de uma data, mantendo apenas o dia.</p>
-                </div>
+                <div class="function-entry"><div class="function-signature"><p><code>Agora()</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Retorna a data e hora atuais.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Ano( ‘data’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Extrai o ano de uma data.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Data( ‘data’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Converte um valor para o tipo data.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Dia( ‘data’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Extrai o dia de uma data.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>DiaSemana( ‘data’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Retorna o dia da semana por extenso.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>DifData( ‘unidade’, ‘data1’, ‘data2’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Calcula a diferença entre duas datas em uma unidade específica ('dias', 'meses', 'anos').</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>FormataData( ‘data’, ‘formato’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Formata uma data de acordo com um padrão (ex: 'dd/MM/yyyy').</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>GeraData( ‘dia’, ‘mês’, ‘ano’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Cria uma data a partir de números de dia, mês e ano.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>GeraDataComTexto( ‘data’, ‘formato’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Cria uma data a partir de um texto e seu formato.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Hoje()</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Retorna a data atual (sem a hora).</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Hora( ‘data’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Extrai a hora de uma data.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Mes( ‘data’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Extrai o mês de uma data.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>MesExtenso( ‘data’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Retorna o nome do mês por extenso.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Minuto( ‘data’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Extrai o minuto de uma data.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Segundo( ‘data’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Extrai o segundo de uma data.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>SomaData( ‘unidade’, ‘valor’, ‘data’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Soma um valor a uma data em uma unidade específica.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>SubData( ‘unidade’, ‘valor’, ‘data’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Subtrai um valor de uma data em uma unidade específica.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Tempo( ‘data’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Retorna a hora de uma data no formato 'HH:mm:ss'.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>ZeraTempo( ‘data’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Remove a informação de hora de uma data, mantendo apenas o dia.</p></div>
 
                 <h4>Texto</h4>
-                <div class="function-entry">
-                    <p><code>Caract( ‘código_ascii’ )</code></p>
-                    <p>Retorna o caractere correspondente a um código ASCII.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>Direita( ‘texto’, ‘num_caracteres’ )</code></p>
-                    <p>Retorna uma parte do final de um texto.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>Esquerda( ‘texto’, ‘num_caracteres’ )</code></p>
-                    <p>Retorna uma parte do início de um texto.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>Fonetica( ‘texto’ )</code></p>
-                    <p>Retorna a representação fonética de um texto.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>FormataTexto( ‘texto’, ‘formato’ )</code></p>
-                    <p>Aplica uma máscara de formatação a um texto (ex: CPF, CNPJ).</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>Localizar( ‘texto_procurar’, ‘texto_base’, [pos_inicial] )</code></p>
-                    <p>Encontra a posição de um texto dentro de outro.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>Maiusculo( ‘texto’ )</code></p>
-                    <p>Converte todo o texto para letras maiúsculas.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>Meio( ‘texto’, ‘pos_inicial’, ‘num_caracteres’ )</code></p>
-                    <p>Extrai uma parte do meio de um texto.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>Minusculo( ‘texto’ )</code></p>
-                    <p>Converte todo o texto para letras minúsculas.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>Mudar( ‘texto’, ‘antigo’, ‘novo’ )</code></p>
-                    <p>Substitui ocorrências de um texto por outro.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>PriMaiusculo( ‘texto’ )</code></p>
-                    <p>Converte a primeira letra de cada palavra para maiúscula.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>Replicar( ‘texto’, ‘vezes’ )</code></p>
-                    <p>Repete um texto um determinado número de vezes.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>Reverso( ‘texto’ )</code></p>
-                    <p>Inverte a ordem dos caracteres de um texto.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>Tamanho( ‘texto’ )</code></p>
-                    <p>Retorna o número de caracteres de um texto.</p>
-                </div>
+                <div class="function-entry"><div class="function-signature"><p><code>Caract( ‘código_ascii’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Retorna o caractere correspondente a um código ASCII.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Direita( ‘texto’, ‘num_caracteres’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Retorna uma parte do final de um texto.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Esquerda( ‘texto’, ‘num_caracteres’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Retorna uma parte do início de um texto.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Fonetica( ‘texto’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Retorna a representação fonética de um texto.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>FormataTexto( ‘texto’, ‘formato’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Aplica uma máscara de formatação a um texto (ex: CPF, CNPJ).</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Localizar( ‘texto_procurar’, ‘texto_base’, [pos_inicial] )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Encontra a posição de um texto dentro de outro, da esquerda para a direita.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>LocalizarRev( ‘texto_procurar’, ‘texto_base’, [pos_inicial] )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Encontra a posição de um texto dentro de outro, da direita para a esquerda.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Maiusculo( ‘texto’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Converte todo o texto para letras maiúsculas.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Meio( ‘texto’, ‘pos_inicial’, ‘num_caracteres’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Extrai uma parte do meio de um texto.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Minusculo( ‘texto’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Converte todo o texto para letras minúsculas.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Mudar( ‘texto’, ‘antigo’, ‘novo’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Substitui ocorrências de um texto por outro.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>PriMaiusculo( ‘texto’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Converte a primeira letra de cada palavra para maiúscula.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Replicar( ‘texto’, ‘vezes’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Repete um texto um determinado número de vezes.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Reverso( ‘texto’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Inverte a ordem dos caracteres de um texto.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Suprimir( ‘texto’, ‘caracteres_a_suprimir’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Remove todos os caracteres especificados de um texto.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Tamanho( ‘texto’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Retorna o número de caracteres de um texto.</p></div>
 
                 <h4>Matemática e Numérica</h4>
-                <div class="function-entry">
-                    <p><code>Abs( ‘numero’ )</code></p>
-                    <p>Retorna o valor absoluto (positivo) de um número.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>Arredondar( ‘numero’, ‘precisão’ )</code></p>
-                    <p>Arredonda um número para uma quantidade de casas decimais.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>FormataNumero( ‘numero’, ‘formato’ )</code></p>
-                    <p>Formata um número com um padrão específico.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>MoedaExtenso( ‘numero’ )</code></p>
-                    <p>Converte um valor monetário para seu equivalente por extenso.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>Raiz( ‘numero’ )</code></p>
-                    <p>Calcula a raiz quadrada de um número.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>Truncar( ‘numero’, ‘precisão’ )</code></p>
-                    <p>Trunca um número para uma quantidade de casas decimais, sem arredondar.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>ValorExtenso( ‘numero’ )</code></p>
-                    <p>Converte um número para seu equivalente por extenso.</p>
-                </div>
+                <div class="function-entry"><div class="function-signature"><p><code>Abs( ‘numero’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Retorna o valor absoluto (positivo) de um número.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Arredondar( ‘numero’, ‘precisão’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Arredonda um número para uma quantidade de casas decimais.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>FormataNumero( ‘numero’, ‘formato’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Formata um número com um padrão específico.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>MoedaExtenso( ‘numero’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Converte um valor monetário para seu equivalente por extenso.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Raiz( ‘numero’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Calcula a raiz quadrada de um número.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Truncar( ‘numero’, ‘precisão’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Trunca um número para uma quantidade de casas decimais, sem arredondar.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>ValorExtenso( ‘numero’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Converte um número para seu equivalente por extenso.</p></div>
 
                 <h4>Validação e Conversão</h4>
-                <div class="function-entry">
-                    <p><code>Codigo( ‘texto’ )</code></p>
-                    <p>Retorna o código ASCII do primeiro caractere de um texto.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>SemelhancaNomes( ‘texto1’, ‘texto2’ )</code></p>
-                    <p>Calcula a semelhança fonética entre dois nomes.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>Texto( ‘valor’ )</code></p>
-                    <p>Converte um número ou lógico para texto.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>ValidaCNH( ‘texto’ )</code></p>
-                    <p>Verifica se um número de CNH é válido.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>ValidaCNPJ( ‘texto’ )</code></p>
-                    <p>Verifica se um número de CNPJ é válido.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>ValidaCPF( ‘texto’ )</code></p>
-                    <p>Verifica se um número de CPF é válido.</p>
-                </div>
-                <div class="function-entry">
-                    <p><code>Valor( ‘texto’ )</code></p>
-                    <p>Converte um texto que representa um número para o tipo numérico.</p>
-                </div>
+                <div class="function-entry"><div class="function-signature"><p><code>Codigo( ‘texto’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Retorna o código ASCII do primeiro caractere de um texto.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>SemelhancaNomes( ‘texto1’, ‘texto2’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Calcula a semelhança fonética entre dois nomes.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Texto( ‘valor’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Converte um número ou lógico para texto.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>ValidaCNH( ‘texto’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Verifica se um número de CNH é válido.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>ValidaCNPJ( ‘texto’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Verifica se um número de CNPJ é válido.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>ValidaCPF( ‘texto’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Verifica se um número de CPF é válido.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Valor( ‘texto’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Converte um texto que representa um número para o tipo numérico.</p></div>
 
                 <h4>Lógica e Estrutura</h4>
-                <div class="function-entry">
-                    <p><code>Se( ‘teste_lógico’, ‘valor_verdadeiro’, ‘valor_falso’ )</code></p>
-                    <p>Executa um de dois valores com base em uma condição lógica.</p>
-                </div>
-                 <div class="function-entry">
-                    <p><code>Copiar( ‘destino’, ‘origem’ )</code></p>
-                    <p>Copia o valor de uma variável de origem para uma de destino.</p>
-                </div>
-
+                <div class="function-entry"><div class="function-signature"><p><code>Se( ‘teste_lógico’, ‘valor_verdadeiro’, ‘valor_falso’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Executa um de dois valores com base em uma condição lógica.</p></div>
+                <div class="function-entry"><div class="function-signature"><p><code>Copiar( ‘destino’, ‘origem’ )</code></p><button class="copy-btn-inline">Copiar</button></div><p class="function-description">Copia o valor de uma variável de origem para uma de destino.</p></div>
             </section>
 
             <section id="exemplos">
                 <h2>Exemplos Práticos</h2>
                 <p>A melhor forma de aprender é praticando. Use os botões para enviar os exemplos direto para o editor.</p>
                 
+                <h3>Exemplos Básicos</h3>
                 <div class="example">
                     <div class="example-left">
                         <h4>Concatenar Nome e Sobrenome</h4>
                         <p>Junta o nome e o sobrenome de um cliente em um único campo de texto.</p>
-                        <pre><code><span class="func">Maiusculo</span>(<span class="var">@@nome</span> & <span class="str">' '</span> & <span class="var">@@sobrenome</span>);</code></pre>
-                        <button class="test-btn" data-formula="Maiusculo(@@nome & ' ' & @@sobrenome);">Testar no Editor</button>
+                        <pre><code><span class="func">Maiusculo</span>(<span class="var">@@nome</span> & <span class="str">" "</span> & <span class="var">@@sobrenome</span>);</code></pre>
+                        <button class="test-btn" data-formula='Maiusculo(@@nome & " " & @@sobrenome);'>Testar no Editor</button>
                     </div>
                     <div class="example-right">
                         <h4>Resultado Esperado</h4>
@@ -271,28 +126,57 @@
                     <div class="example-left">
                         <h4>Calcular a data de vencimento</h4>
                         <p>Soma 30 dias à data de emissão de um documento para obter o vencimento.</p>
-                        <pre><code><span class="func">SomaData</span>(<span class="str">'dias'</span>, <span class="num">30</span>, <span class="var">@@data_emissao</span>);</code></pre>
-                        <button class="test-btn" data-formula="SomaData('dias', 30, @@data_emissao);">Testar no Editor</button>
+                        <pre><code><span class="func">SomaData</span>(<span class="str">"dias"</span>, <span class="num">30</span>, <span class="var">@@data_emissao</span>);</code></pre>
+                        <button class="test-btn" data-formula='SomaData("dias", 30, @@data_emissao);'>Testar no Editor</button>
                     </div>
                     <div class="example-right">
                         <h4>Resultado Esperado</h4>
                         <p>Se <code>@@data_emissao</code> for 15/10/2025, o resultado será a data 14/11/2025.</p>
                     </div>
                 </div>
+
+                <h3>Combinando Funções (Avançado)</h3>
+                <p>As funções podem ser aninhadas para criar lógicas mais complexas. O resultado de uma função interna serve como parâmetro para a função externa.</p>
+
+                <div class="example">
+                    <div class="example-left">
+                        <h4>Copiar a Hora Atual Formatada</h4>
+                        <p>Obtém a hora exata do sistema e a copia para um campo de destino.</p>
+                        <pre><code><span class="func">Copiar</span>(<span class="var">@@CTX.HR_FIM</span>, <span class="func">Tempo</span>(<span class="func">Agora</span>()));</code></pre>
+                        <button class="test-btn" data-formula='Copiar(@@CTX.HR_FIM, Tempo(Agora()));'>Testar no Editor</button>
+                    </div>
+                    <div class="example-right">
+                        <h4>Explicação</h4>
+                        <p>1. <code>Agora()</code> retorna a data e hora completas.<br>2. <code>Tempo()</code> extrai apenas a parte da hora (ex: "14:30:00").<br>3. <code>Copiar()</code> atribui esse resultado à variável de destino <code>@@CTX.HR_FIM</code>.</p>
+                    </div>
+                </div>
+
+                <div class="example">
+                    <div class="example-left">
+                        <h4>Copiar a Data Atual Formatada</h4>
+                        <p>Obtém a data atual e a formata no padrão "DMA" antes de copiar.</p>
+                        <pre><code><span class="func">Copiar</span>(<span class="var">@@CTX.DT_FIM</span>, <span class="func">FormataData</span>(<span class="func">Hoje</span>(), <span class="str">"DMA"</span>));</code></pre>
+                        <button class="test-btn" data-formula='Copiar(@@CTX.DT_FIM, FormataData(Hoje(), "DMA"));'>Testar no Editor</button>
+                    </div>
+                    <div class="example-right">
+                        <h4>Explicação</h4>
+                        <p>1. <code>Hoje()</code> retorna a data atual.<br>2. <code>FormataData()</code> converte a data para o formato texto "ddMMyyyy".<br>3. <code>Copiar()</code> atribui o texto formatado à variável <code>@@CTX.DT_FIM</code>.</p>
+                    </div>
+                </div>
             </section>
 
             <section id="erros">
                 <h2>Erros Comuns e Soluções</h2>
-                <p>Veja alguns dos erros mais frequentes e como corrigi-los.</p>
+                <p>O validador ajuda a encontrar e corrigir erros antes mesmo de executar a fórmula. Veja os mais frequentes:</p>
 
                 <div class="example">
                     <div class="example-left">
                         <h4>Erro: Ponto e vírgula ausente</h4>
                         <p>Toda instrução precisa terminar com <code>;</code>.</p>
-                        <pre><code class="error-code">Se(@@valor > 100, 'Alto', 'Baixo')</code></pre>
+                        <pre><code class="error-code">Se(@@valor > 100, "Alto", "Baixo")</code></pre>
                         <h4>Correção</h4>
-                        <pre><code>Se(@@valor > 100, 'Alto', 'Baixo');</code></pre>
-                        <button class="test-btn" data-formula="Se(@@valor > 100, 'Alto', 'Baixo')">Testar Erro</button>
+                        <pre><code>Se(@@valor > 100, "Alto", "Baixo");</code></pre>
+                        <button class="test-btn" data-formula='Se(@@valor > 100, "Alto", "Baixo")'>Testar Erro</button>
                     </div>
                     <div class="example-right">
                         <h4>Explicação</h4>
@@ -302,16 +186,46 @@
 
                  <div class="example">
                     <div class="example-left">
-                        <h4>Erro: Aspas ausentes em texto</h4>
-                        <p>Valores de texto literal precisam de aspas.</p>
+                        <h4>Erro: Valor de texto sem aspas</h4>
+                        <p>Qualquer valor de texto que não seja uma variável ou função deve estar entre aspas duplas.</p>
                         <pre><code class="error-code">@@campo = Ativo;</code></pre>
                         <h4>Correção</h4>
-                        <pre><code>@@campo = 'Ativo';</code></pre>
-                        <button class="test-btn" data-formula="@@campo = Ativo;">Testar Erro</button>
+                        <pre><code>@@campo = "Ativo";</code></pre>
+                        <button class="test-btn" data-formula='@@campo = Ativo;'>Testar Erro</button>
                     </div>
                     <div class="example-right">
                         <h4>Explicação</h4>
-                        <p>O validador identifica que "Ativo" provavelmente deveria ser um texto e sugere adicionar aspas.</p>
+                        <p>O validador identifica que <code>Ativo</code> não é uma variável nem função, tratando-o como um texto que precisa de aspas e sugerindo a correção.</p>
+                    </div>
+                </div>
+
+                <div class="example">
+                    <div class="example-left">
+                        <h4>Erro: Uso de aspas simples</h4>
+                        <p>Para manter a consistência, apenas aspas duplas (<code>"</code>) são permitidas para textos.</p>
+                        <pre><code class="error-code">@@campo = 'Texto com aspas simples';</code></pre>
+                        <h4>Correção</h4>
+                        <pre><code>@@campo = "Texto com aspas simples";</code></pre>
+                        <button class="test-btn" data-formula="@@campo = 'Texto com aspas simples';">Testar Erro</button>
+                    </div>
+                    <div class="example-right">
+                        <h4>Explicação</h4>
+                        <p>O validador detecta o uso de aspas simples e sugere a conversão automática para aspas duplas.</p>
+                    </div>
+                </div>
+
+                <div class="example">
+                    <div class="example-left">
+                        <h4>Erro: Operador ausente</h4>
+                        <p>Dois valores ou variáveis não podem aparecer lado a lado sem um operador que os conecte.</p>
+                        <pre><code class="error-code">@@nome & " " @@sobrenome;</code></pre>
+                        <h4>Correção</h4>
+                        <pre><code>@@nome & " " & @@sobrenome;</code></pre>
+                        <button class="test-btn" data-formula='@@nome & " " @@sobrenome;'>Testar Erro</button>
+                    </div>
+                    <div class="example-right">
+                        <h4>Explicação</h4>
+                        <p>O validador detecta que falta um operador entre <code>" "</code> e <code>@@sobrenome</code> e sugere adicionar um, como o <code>&</code> para concatenação.</p>
                     </div>
                 </div>
             </section>

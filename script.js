@@ -107,12 +107,13 @@ function renderValidation() {
     resultadoEl.appendChild(statusCard);
 
     // Card de Erros
-    const uniqueErrors = [...new Map(errors.map(e => [e.msg, e])).values()];
-    if (uniqueErrors.length > 0) {
+    if (errors.length > 0) {
+        const sortedErrors = [...errors].sort((a, b) => a.pos - b.pos);
+
         // 1. Render highlights
         let highlightedText = '';
         let lastIndex = 0;
-        uniqueErrors.sort((a, b) => a.pos - b.pos).forEach((error, index) => {
+        sortedErrors.forEach((error, index) => {
             const errorEnd = Math.min(val.length, error.pos + (String(error.term || val[error.pos] || '').length || 1));
             
             highlightedText += escapeHtml(val.substring(lastIndex, error.pos));
@@ -127,7 +128,7 @@ function renderValidation() {
         errorsCard.id = 'errors-card';
         errorsCard.className = 'result-card';
         let errorsHtml = `<h3>${ICONS.error} Erros Encontrados</h3><div class="scroll-box"><ul>`;
-        uniqueErrors.forEach((error, index) => {
+        sortedErrors.forEach((error, index) => {
             errorsHtml += `<li data-error-pos="${error.pos}"><span>${error.msg}</span></li>`;
         });
         errorsHtml += '</ul></div>';
@@ -153,7 +154,7 @@ function renderValidation() {
             correctionsHtml += `
                 <div class="correction-item" id="correction-${index}">
                     <p>${correction.description}</p>
-                    <button class="apply-btn">Aplicar</button>
+                    ${correction.apply ? `<button class="apply-btn">Aplicar</button>` : ''}
                 </div>`;
         });
 
@@ -173,12 +174,23 @@ function renderValidation() {
         correctionsCard.innerHTML = correctionsHtml;
         resultadoEl.appendChild(correctionsCard);
 
-        // Adicionar event listeners para os botões
-        corrections.forEach((correction, index) => {
-            document.querySelector(`#correction-${index} .apply-btn`).addEventListener('click', () => {
+        // Adicionar event listeners para os botões (usando delegação de eventos)
+        correctionsCard.addEventListener('click', (event) => {
+            if (!event.target.classList.contains('apply-btn')) return;
+
+            // Ignora o botão "Aplicar Todas"
+            if (event.target.id === 'apply-all-btn') return;
+
+            const correctionItem = event.target.closest('.correction-item');
+            if (!correctionItem || !correctionItem.id.startsWith('correction-')) return;
+
+            const index = parseInt(correctionItem.id.split('-')[1], 10);
+            const correction = corrections[index];
+
+            if (correction && correction.apply) {
                 updateFormula(correction.newFormula, true);
                 processChange();
-            });
+            }
         });
         // O botão só existirá se não houver conflitos.
         const applyAllBtn = document.getElementById('apply-all-btn');
@@ -204,7 +216,7 @@ function renderValidation() {
  * This is a complete rewrite of the validation logic using a stateful tokenizer.
  * It processes the formula string character by character, understanding the context (e.g., inside a string, function, variable).
  * This approach is more robust and avoids the cascading errors and incorrect correction placements of the previous regex-heavy implementation.
- *
+ * 
  * UPDATE: This function now acts as a script runner, splitting the input by semicolons
  * and validating each statement individually.
  */
@@ -220,7 +232,7 @@ function parseAndValidate(scriptStr) {
 
     for (let i = 0; i < scriptStr.length; i++) {
         const char = scriptStr[i];
-        if ((char === '"' || char === "'") && (i === 0 || scriptStr[i-1] !== '\\')) {
+        if (char === '"' && (i === 0 || scriptStr[i-1] !== '\\')) { // Only check for double quotes
             if (!inStringState.inString) {
                 inStringState = { inString: true, quoteType: char };
             } else if (inStringState.quoteType === char) {
@@ -260,7 +272,7 @@ function parseAndValidate(scriptStr) {
 function validateStatement(statementStr, offset, fullScript) {
     const errors = [];
     const corrections = [];
-    const trimmedStatement = statementStr.trim();
+    let trimmedStatement = statementStr.trim();
 
     // This function contains the logic from the old parseAndValidate, but for a single statement.
     // All position-based errors and corrections must have the offset added.
@@ -269,18 +281,20 @@ function validateStatement(statementStr, offset, fullScript) {
         const newCorr = { ...corr };
         newCorr.pos += offset;
         
-        // The `apply` function needs to operate on the full script, not just the statement.
-        const originalApply = corr.apply;
-        newCorr.apply = (fullScript) => {
-            // To apply the change correctly, we reconstruct the script.
-            // This is a simplified approach. A more robust solution would involve a proper AST.
-            const statementToChange = fullScript.substring(offset, offset + statementStr.length);
-            const changedStatement = originalApply(statementToChange);
-            return fullScript.substring(0, offset) + changedStatement + fullScript.substring(offset + statementStr.length);
-        };
-        
-        // Re-calculate newFormula based on the full script
-        newCorr.newFormula = newCorr.apply(fullScript);
+        if (corr.apply) {
+            // The `apply` function needs to operate on the full script, not just the statement.
+            const originalApply = corr.apply;
+            newCorr.apply = (fullScript) => {
+                // To apply the change correctly, we reconstruct the script.
+                // This is a simplified approach. A more robust solution would involve a proper AST.
+                const statementToChange = fullScript.substring(offset, offset + statementStr.length);
+                const changedStatement = originalApply(statementToChange);
+                return fullScript.substring(0, offset) + changedStatement + fullScript.substring(offset + statementStr.length);
+            };
+            
+            // Re-calculate newFormula based on the full script
+            newCorr.newFormula = newCorr.apply(fullScript);
+        }
 
         return newCorr;
     };
@@ -290,8 +304,68 @@ function validateStatement(statementStr, offset, fullScript) {
 
     // --- Start of single-statement validation logic ---
 
+    // New validation for unquoted string literals
+    const allWordsRegex = /[a-zA-Z_][a-zA-Z0-9_]*/g;
+    let wordMatch;
+    const keywords = new Set(['E', 'OU', 'NEGADO', 'VERDADEIRO', 'FALSO']); 
+
+    while ((wordMatch = allWordsRegex.exec(statementStr)) !== null) {
+        const term = wordMatch[0];
+        const pos = wordMatch.index;
+
+        // 1. Ignore if inside a string
+        if (isInsideString(pos, statementStr)) continue;
+
+        // 2. Ignore if it's a known function or keyword
+        if (ROCKET_FUNCTIONS_SET.has(term.toUpperCase()) || keywords.has(term.toUpperCase())) continue;
+
+        // 3. Ignore if it's part of a variable name (e.g., @@var or @@var.prop)
+        if ((pos >= 2 && statementStr.substring(pos - 2, pos) === '@@') || (pos > 0 && statementStr[pos - 1] === '.')) {
+            continue;
+        }
+
+        // 4. Ignore if it's a function call (followed by '(')
+        let nextMeaningfulChar = '';
+        for (let i = pos + term.length; i < statementStr.length; i++) {
+            if (statementStr[i].trim() !== '') {
+                nextMeaningfulChar = statementStr[i];
+                break;
+            }
+        }
+        if (nextMeaningfulChar === '(') continue;
+        
+        // 5. If we are here, it's an unquoted string literal.
+        if (errors.some(e => e.pos === pos + offset)) continue;
+
+        addError({ msg: `O valor <code>${term}</code> parece ser um texto e deve estar entre aspas duplas.`, pos, term });
+        addCorrection({
+            description: `Converter <code>${term}</code> para texto: <code>"${term}"</code>?`,
+            apply: (f) => f.substring(0, pos) + `"${term}"` + f.substring(pos + term.length),
+            pos
+        });
+    }
+
+    // New validation for number" typo to avoid confusing "Unterminated string" errors.
+    const numberQuoteRegex = /(\d+)\"/g;
+    let numberQuoteMatch;
+    while ((numberQuoteMatch = numberQuoteRegex.exec(statementStr))) {
+        const number = numberQuoteMatch[1];
+        const pos = numberQuoteMatch.index;
+        if (!isInsideString(pos, statementStr)) {
+            const term = number + '"';
+            addError({ msg: `Valor numérico parece ser uma string mal formatada: <code>${term}</code>.`, pos: pos, term: term });
+            addCorrection({
+                description: `Corrigir <code>${term}</code> para <code>\"${number}\"</code>?`,
+                apply: (f) => f.substring(0, pos) + `\"${number}\"` + f.substring(pos + term.length),
+                pos: pos
+            });
+            // Replace the problematic part with spaces to prevent the parser from getting confused.
+            statementStr = statementStr.substring(0, pos) + ' '.repeat(term.length) + statementStr.substring(pos + term.length);
+        }
+    }
+
     // New validation for numbers that should be strings (like CPF/CNPJ)
-    const numericComparisonRegex = /(@@[a-zA-Z0-9_.]+)\s*=\s*(\d{11,})(?!["'])/g; // Negative lookahead to avoid matching if it's already a string
+    const numericComparisonRegex = /(@@[a-zA-Z0-9_.]+)\s*=\s*(\d{11,})(?![\"])/g; // Negative lookahead to avoid matching if it's already a string
     let numericMatch;
     while ((numericMatch = numericComparisonRegex.exec(statementStr))) {
         const variable = numericMatch[1];
@@ -302,7 +376,7 @@ function validateStatement(statementStr, offset, fullScript) {
             const errorMsg = `Comparação com número literal. O valor <code>${number}</code> deve ser um texto (entre aspas).`; // This message is already good.
             addError({ msg: errorMsg, pos });
 
-            const correctionDesc = `Converter o número <code>${number}</code> para texto: <code>"${number}"</code>?`;
+            const correctionDesc = `Converter o número <code>${number}</code> para texto: <code>\"${number}\"</code>?`;
             
             const startIndex = numericMatch.index;
 
@@ -311,7 +385,7 @@ function validateStatement(statementStr, offset, fullScript) {
                 apply: (f) => {
                     const numIndex = f.indexOf(number, startIndex);
                     if (numIndex !== -1) {
-                        return f.slice(0, numIndex) + `"${number}"` + f.slice(numIndex + number.length);
+                        return f.slice(0, numIndex) + `\"${number}\"` + f.slice(numIndex + number.length);
                     }
                     return f; // Should not happen
                 },
@@ -323,48 +397,48 @@ function validateStatement(statementStr, offset, fullScript) {
     const parensStack = [];
     let stringState = { inString: false, quoteType: null };
 
+    // Concatenation validation
+    // This regex finds terms (variables, strings, numbers, or function calls ending in ')')
+    // that are followed by another term (variable, string, number, or function name), without a valid operator between them.
+    // It now includes a negative lookahead to ignore known operators (including &).
+    const concatRegex = /((?:@@[a-zA-Z0-9_.]+|\"[^\"]*\"|\b\d+(?:\.\d+)?\b|\)))\s+(?!E\b|OU\b|NEGADO\b|[=<>+\-*\/%^&])((?:@@[a-zA-Z0-9_.]+|\"[^\"]*\"|\b\d+(?:\.\d+)?\b|[a-zA-Z_][a-zA-Z0-9_]*))/g;
+    let concatMatch;
+
+    while ((concatMatch = concatRegex.exec(statementStr))) {
+        const firstTerm = concatMatch[1].trim();
+        const secondTerm = concatMatch[2].trim();
+        const pos = concatMatch.index + concatMatch[1].length;
+        let openParensCount = 0;
+        for (let k = 0; k < concatMatch.index; k++) {
+            if (statementStr[k] === '(' && !isInsideString(k, statementStr)) openParensCount++;
+            if (statementStr[k] === ')' && !isInsideString(k, statementStr)) openParensCount--;
+        }
+        const errorMsg = `Operador ausente entre <code>${firstTerm}</code> e <code>${secondTerm}</code>.`;
+        if (!errors.some(e => e.pos === pos + offset)) { // Avoid duplicate errors for the same position
+            addError({ msg: errorMsg, pos });
+            const createCorrection = (operator) => ({
+                description: `Adicionar <code>${operator}</code> entre <code>${firstTerm}</code> e <code>${secondTerm}</code>?`,
+                apply: (f) => f.slice(0, pos) + ` ${operator} ` + f.slice(pos).trimStart(),
+                pos
+            });
+
+            // If a statement ends with ')' and the next term is a function, it's likely a missing semicolon.
+            if (firstTerm.endsWith(')') && ROCKET_FUNCTIONS_SET.has(secondTerm.toUpperCase())) {
+                addCorrection(createCorrection(';'));
+                addCorrection(createCorrection(','));
+            } else if (openParensCount > 0) { // Inside a function, a comma is more likely.
+                addCorrection(createCorrection(','));
+                addCorrection(createCorrection('&'));
+            } else { // Outside a function, an ampersand is more likely for concatenation.
+                addCorrection(createCorrection('&'));
+                addCorrection(createCorrection(','));
+            }
+        }
+    }
+
     for (let i = 0; i < statementStr.length; i++) {
         const char = statementStr[i];
         const prevChar = statementStr[i - 1];
-
-        // Concatenation validation
-        // This regex finds terms (variables, strings, or function calls ending in ')')
-        // that are followed by another term (variable, string, or function name), without a valid operator between them.
-        // It now includes a negative lookahead to ignore known operators.
-        const concatRegex = /((?:@@[a-zA-Z0-9_.]+|\"[^\"]*\"|'[^']*'|\)))\s+(?!E\b|OU\b|NEGADO\b|[=<>+\-*\/%^])((?:@@[a-zA-Z0-9_.]+|\"[^\"]*\"|'[^']*'|[a-zA-Z_][a-zA-Z0-9_]*))/g;
-        let concatMatch;
-
-        while ((concatMatch = concatRegex.exec(statementStr))) {
-            const firstTerm = concatMatch[1].trim();
-            const secondTerm = concatMatch[2].trim();
-            const pos = concatMatch.index + concatMatch[1].length;
-            let openParensCount = 0;
-            for (let k = 0; k < concatMatch.index; k++) {
-                if (statementStr[k] === '(' && !isInsideString(k, statementStr)) openParensCount++;
-                if (statementStr[k] === ')' && !isInsideString(k, statementStr)) openParensCount--;
-            }
-            const errorMsg = `Operador ausente entre <code>${firstTerm}</code> e <code>${secondTerm}</code>.`;
-            if (!errors.some(e => e.pos === pos + offset)) { // Avoid duplicate errors for the same position
-                addError({ msg: errorMsg, pos });
-                const createCorrection = (operator) => ({
-                    description: `Adicionar <code>${operator}</code> entre <code>${firstTerm}</code> e <code>${secondTerm}</code>?`,
-                    apply: (f) => f.slice(0, f.indexOf(firstTerm, concatMatch.index) + firstTerm.length) + ` ${operator} ` + f.slice(f.indexOf(firstTerm, concatMatch.index) + firstTerm.length).trimStart(),
-                    pos
-                });
-
-                // If a statement ends with ')' and the next term is a function, it's likely a missing semicolon.
-                if (firstTerm.endsWith(')') && ROCKET_FUNCTIONS_SET.has(secondTerm.toUpperCase())) {
-                    addCorrection(createCorrection(';'));
-                    addCorrection(createCorrection(','));
-                } else if (openParensCount > 0) { // Inside a function, a comma is more likely.
-                    addCorrection(createCorrection(','));
-                    addCorrection(createCorrection('&'));
-                } else { // Outside a function, an ampersand is more likely for concatenation.
-                    addCorrection(createCorrection('&'));
-                    addCorrection(createCorrection(','));
-                }
-            }
-        }
 
         // Variable validation
         if (char === '@' && prevChar !== '@' && statementStr.substring(i, i + 2) !== '@@') {
@@ -380,44 +454,34 @@ function validateStatement(statementStr, offset, fullScript) {
             }
         }
 
-        // String validation
-        if (!stringState.inString) {
-            if ((char === '"' || char === "'") && prevChar !== '\\') {
-                // Check for invalid preceding characters to catch missing opening quotes like in `= 1"`.
-                const lookbehind = statementStr.substring(0, i).trimEnd();
-                const lastTwoCharsOfLookbehind = lookbehind.slice(-2).trim();
-                const validPrecedingChars = new Set(['=', ',', '(', '&', ';', '', '<>', '>=', '<=', '<', '>', '+', '-', '*', '/', '^', '%']); // '' for start of formula
-
-                // Check if the end of the lookbehind is not one of the valid single or double character operators.
-                if (!validPrecedingChars.has(lastTwoCharsOfLookbehind) && !validPrecedingChars.has(lastTwoCharsOfLookbehind.slice(-1)) && lastTwoCharsOfLookbehind !== '"' && lastTwoCharsOfLookbehind !== "'") {
-                    const errorMsg = `Aspas de abertura ausentes ou caractere inválido antes da string.`; // Mantido genérico pois a sugestão já destaca o termo.
-                    const lastSpaceIndex = lookbehind.lastIndexOf(' ');
-                    const termToQuote = lookbehind.substring(lastSpaceIndex + 1);
-                    const correctionDesc = `Envolver <code>${termToQuote}</code> com aspas?`;
-                    
-                    addError({ msg: errorMsg, pos: i, term: termToQuote });
-
-                    const beforeTerm = lookbehind.substring(0, lastSpaceIndex + 1);
-                    const startOfTerm = i - termToQuote.length;
-                    addCorrection({
-                        description: correctionDesc,
-                        apply: (f) => {
-                            return f.substring(0, startOfTerm) + `"${termToQuote}"` + f.substring(i + 1);
-                        },
-                        pos: startOfTerm
-                    });
-                    continue; // Continue to find other errors, but this part is handled for this statement.
-                }
-
+        // String validation state machine
+        if (char === '"' && prevChar !== '\\') {
+            if (!stringState.inString) {
                 stringState = { inString: true, quoteType: char, start: i };
-            }
-        } else {
-            if (char === stringState.quoteType && prevChar !== '\\') {
+            } else if (char === stringState.quoteType) {
                 stringState = { inString: false, quoteType: null, start: -1 };
+            }
+            continue; 
+        }
+        
+        // Add validation for single quotes
+        if (char === "'") {
+            if (!stringState.inString) { // only flag if not inside a valid double-quoted string
+                addError({ msg: `Strings devem usar aspas duplas ("). Aspas simples (') não são permitidas.`, pos: i, term: "'" });
+                // Suggest replacing all single quotes in the statement to avoid multiple corrections for the same issue.
+                if (!corrections.some(c => c.description.includes("Mudar todas as aspas simples"))) {
+                    addCorrection({
+                        description: `Mudar todas as aspas simples para aspas duplas neste comando?`,
+                        apply: (f) => f.replace(/'/g, '"'),
+                        pos: i
+                    });
+                }
             }
         }
 
-        if (stringState.inString) continue;
+        if (stringState.inString) {
+            continue; 
+        }
 
         // Parentheses validation
         if (char === '(') {
@@ -438,18 +502,21 @@ function validateStatement(statementStr, offset, fullScript) {
         // Function name validation
         if (char === '(') {
             const lookbehind = statementStr.substring(0, i).trimEnd();
-            const funcMatch = lookbehind.match(/([a-zA-Z_][a-zA-Z0-9_]*)$/);
+            const funcMatch = lookbehind.match(/([a-zA-Z0-9_À-Úà-ú]+)$/);
             if (funcMatch) {
                 const funcName = funcMatch[1].toUpperCase();
                 if (!ROCKET_FUNCTIONS_SET.has(funcName)) {
                     const closest = findClosestFunction(funcName);
                     const pos = lookbehind.lastIndexOf(funcMatch[1]);
                     if (closest) {
-                        addError({ msg: `A função <code>${funcName}</code> não foi encontrada. Você quis dizer <code>${closest}</code>?`, pos, term: funcName });
-                        const regex = new RegExp(`\\b${funcName}\\b`, 'i');
+                        addError({ msg: `A função <code>${funcName}</code> não foi encontrada. Você quis dizer <code>${closest}</code>?`, pos, term: funcMatch[1] });
+                        const originalTerm = funcMatch[1];
                         addCorrection({
                             description: `Você quis dizer <code>${closest}</code>?`,
-                            apply: (f) => f.replace(regex, closest),
+                            apply: (f) => {
+                                // f is the statement string. pos is the index within the statement.
+                                return f.substring(0, pos) + closest + f.substring(pos + originalTerm.length);
+                            },
                             pos
                         });
                     } else {
@@ -457,41 +524,6 @@ function validateStatement(statementStr, offset, fullScript) {
                     }
                 }
             }
-        }
-    }
-
-    // New check for bare words that should be strings
-    const keywords = new Set(['E', 'OU', 'NEGADO', 'VERDADEIRO', 'FALSO']);
-    const bareWordRegex = /\b[a-zA-Z_][a-zA-Z0-9_]*\b/g;
-    let match;
-    while ((match = bareWordRegex.exec(statementStr))) {
-        const word = match[0];
-        const pos = match.index;
-
-        if (isInsideString(pos, statementStr)) continue;
-        if (keywords.has(word.toUpperCase())) continue;
-        if (ROCKET_FUNCTIONS_SET.has(word.toUpperCase())) continue;
-
-        let start = pos;
-        while(start > 0 && statementStr[start-1].match(/[\w.]/)) {
-            start--;
-        }
-        if (start > 1 && statementStr.substring(start-2, start) === '@@') {
-            continue;
-        }
-
-        if (statementStr.substring(pos + word.length).trim().startsWith('(')) {
-            continue;
-        }
-
-        const errorMsg = `O termo <code>${word}</code> não é reconhecido. Se for um texto, deve estar entre aspas.`;
-        if (!errors.some(e => e.pos === pos + offset)) {
-            addError({ msg: errorMsg, pos, term: word });
-            addCorrection({
-                description: `Converter <code>${word}</code> para texto (<code>'${word}'</code>)?`,
-                apply: (f) => f.slice(0, pos) + `'${word}'` + f.slice(pos + word.length),
-                pos
-            });
         }
     }
 
@@ -507,13 +539,13 @@ function validateStatement(statementStr, offset, fullScript) {
             // Evita falsos positivos dentro de outras palavras, strings ou variáveis (nomes com @@, ., etc)
             if (pos > 0 && statementStr[pos - 1].match(/[a-zA-Z0-9_"'@.]/)) continue;
 
-            const errorMsg = `A função <code>${func}</code> deve ser seguida por \'(\'.`;
+            const errorMsg = `A função <code>${func}</code> deve ser seguida por \'('`;
             if (!errors.some(e => e.pos === pos + offset)) {
                 addError({ msg: errorMsg, pos, term: func });
                 const insertPos = noParenMatch.index + func.length;
                 addCorrection({
                     description: `Adicionar <code>(</code> após a função <code>${func}</code>.`,
-                    apply: (f) => f.slice(0, insertPos) + '()' + f.slice(insertPos), // Adiciona () para ser mais útil
+                    apply: (f) => f.slice(0, insertPos) + '(' + f.slice(insertPos), // Adiciona apenas o '('
                     pos: insertPos
                 });
             }
@@ -522,10 +554,15 @@ function validateStatement(statementStr, offset, fullScript) {
 
     // Final checks for the statement
     if (stringState.inString) {
-        addError({ msg: `String não terminada. Verifique se todas as aspas (<code>${stringState.quoteType}</code>) foram fechadas.`, pos: stringState.start, term: statementStr.substring(stringState.start) });
-    }
+        const q_n_pos = stringState.start;
+        addError({ msg: `String não terminada. Verifique se todas as aspas (<code>${stringState.quoteType}</code>) foram fechadas.`, pos: q_n_pos, term: statementStr.substring(q_n_pos) });
 
-    if (parensStack.length > 0) {
+        // Add a hint to help the user find the problematic area
+        addCorrection({
+            description: `O erro "String não terminada" geralmente ocorre quando há um número ímpar de aspas no código. Isso pode ser causado por uma string que contém outra aspa, como em <code>"texto com "aspas" aqui"</code>. O local real do erro pode estar antes do que foi apontado.`
+        });
+
+    } else if (parensStack.length > 0) {
         const missing = parensStack.length;
         const pos = parensStack[parensStack.length - 1].pos;
         addError({ msg: `${missing} parêntese(s) não fechado(s).`, pos, term: '(' });
@@ -550,14 +587,14 @@ function validateStatement(statementStr, offset, fullScript) {
 }
 
 function escapeHtml(text) {
-    return text.replace(/[&<>"']/g, (match) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[match]));
+    return text.replace(/[&<>"]/g, (match) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[match]));
 }
 
 function isInsideString(pos, text) {
     let inString = false;
     let quoteType = null;
     for (let i = 0; i < pos; i++) {
-        if ((text[i] === '"' || text[i] === "'") && (i === 0 || text[i-1] !== '\\')) {
+        if (text[i] === '"' && (i === 0 || text[i-1] !== '\\')) {
             if (!inString) {
                 inString = true;
                 quoteType = text[i];
@@ -698,7 +735,7 @@ function levenshtein(s1, s2){s1=s1.toLowerCase();s2=s2.toLowerCase();var costs=n
     }
 }
 let currentFocus;
-function showAutocomplete(t){const e=t.toUpperCase().split(/\(|\s|,|'|"|&|\+|-|\*|\//).pop();if(closeAllLists(),!e||"'"===t.slice(-1)||"\""===t.slice(-1))return!1;currentFocus=-1;const n=document.createElement("DIV");n.setAttribute("id","autocomplete-list"),n.setAttribute("class","autocomplete-items"),document.getElementById("formula-container").appendChild(n);const o=ROCKET_FUNCTIONS.filter(n=>n.startsWith(e));if(0===o.length){const r=findClosestFunction(e);if(r){const l=document.createElement("DIV");l.innerHTML=`<span class="did-you-mean">Você quis dizer: </span><strong>${r}</strong>?`,l.addEventListener("click",()=>applySuggestion(r,e)),n.appendChild(l)}}else o.forEach(t=>{const o=document.createElement("DIV");o.innerHTML=`<strong>${t.substr(0,e.length)}</strong>${t.substr(e.length)}`,o.addEventListener("click",()=>applySuggestion(t,e)),n.appendChild(o)});0===n.childElementCount&&closeAllLists()}function applySuggestion(t,e){const n=formulaInput.value,o=n.toUpperCase().lastIndexOf(e);formulaInput.value=n.substring(0,o)+t,closeAllLists(),formulaInput.focus(),validate()}function closeAllLists(){const t=document.getElementsByClassName("autocomplete-items");for(let e=0;e<t.length;e++)t[e].parentNode.removeChild(t[e])}function handleAutocompleteNav(t){let e=document.getElementById("autocomplete-list");if(e&&(e=e.getElementsByTagName("div")),!e||0===e.length)return;if(40==t.keyCode)currentFocus++,addActive(e);else if(38==t.keyCode)currentFocus--,addActive(e);else if(13==t.keyCode||9==t.keyCode){if(currentFocus>-1)t.preventDefault(),e[currentFocus].click()}else 27==t.keyCode&&closeAllLists()}function addActive(t){if(!t)return!1;removeActive(t),currentFocus>=t.length&&(currentFocus=0),currentFocus<0&&(currentFocus=t.length-1),t[currentFocus].classList.add("autocomplete-active")}function removeActive(t){for(let e=0;e<t.length;e++)t[e].classList.remove("autocomplete-active")}
+function showAutocomplete(t){const e=t.toUpperCase().split(/\(|\s|,|'|"|&|\+|\-|\*|\//).pop();if(closeAllLists(),!e||"'"===t.slice(-1)||"\""===t.slice(-1))return!1;currentFocus=-1;const n=document.createElement("DIV");n.setAttribute("id","autocomplete-list"),n.setAttribute("class","autocomplete-items"),document.getElementById("formula-container").appendChild(n);const o=ROCKET_FUNCTIONS.filter(n=>n.startsWith(e));if(0===o.length){const r=findClosestFunction(e);if(r){const l=document.createElement("DIV");l.innerHTML=`<span class="did-you-mean">Você quis dizer: </span><strong>${r}</strong>?`,l.addEventListener("click",()=>applySuggestion(r,e)),n.appendChild(l)}}else o.forEach(t=>{const o=document.createElement("DIV");o.innerHTML=`<strong>${t.substr(0,e.length)}</strong>${t.substr(e.length)}`,o.addEventListener("click",()=>applySuggestion(t,e)),n.appendChild(o)});0===n.childElementCount&&closeAllLists()}function applySuggestion(t,e){const n=formulaInput.value,o=n.toUpperCase().lastIndexOf(e);formulaInput.value=n.substring(0,o)+t,closeAllLists(),formulaInput.focus(),validate()}function closeAllLists(){const t=document.getElementsByClassName("autocomplete-items");for(let e=0;e<t.length;e++)t[e].parentNode.removeChild(t[e])}function handleAutocompleteNav(t){let e=document.getElementById("autocomplete-list");if(e&&(e=e.getElementsByTagName("div")),!e||0===e.length)return;if(40==t.keyCode)currentFocus++,addActive(e);else if(38==t.keyCode)currentFocus--,addActive(e);else if(13==t.keyCode||9==t.keyCode){if(currentFocus>-1)t.preventDefault(),e[currentFocus].click()}else 27==t.keyCode&&closeAllLists()}function addActive(t){if(!t)return!1;removeActive(t),currentFocus>=t.length&&(currentFocus=0),currentFocus<0&&(currentFocus=t.length-1),t[currentFocus].classList.add("autocomplete-active")}function removeActive(t){for(let e=0;e<t.length;e++)t[e].classList.remove("autocomplete-active")}
 const processChange=debounce(()=>validate());formulaInput.addEventListener("input",()=>{
     processChange();
     showAutocomplete(formulaInput.value);
